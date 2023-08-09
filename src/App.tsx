@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Box, styled} from "@mui/material";
-import {SpecificationSection} from "./Specifications";
-import {OutputSection} from "./Output";
+import {SpecificationSection} from "./components/Specifications";
+import {OutputSection} from "./components/Output";
 
 const AppContainer = styled(Box)(({theme}) => ({
     height: "100vh",

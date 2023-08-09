@@ -10,7 +10,7 @@ const Layout = styled(Box)(({theme}) => ({
 
 const CodeContainer = styled(Box)(({theme}) => ({
     height: "90%",
-    width: "99%",
+    width: "95%",
     border: "1px solid black",
     backgroundColor: "#f1f7d5",
     overflow: "auto",

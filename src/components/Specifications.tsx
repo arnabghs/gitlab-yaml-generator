@@ -1,5 +1,7 @@
 import {Box, Button, styled, TextField, useTheme} from "@mui/material";
 import React, {useEffect, useState} from "react";
+import {COMPLETE_YAML_PROMPT} from "../prompt_templates/go/generateFullYaml";
+import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFromTemplate";
 
 const Layout = styled(Box)(({theme}) => ({
     height: "100%",
@@ -199,11 +201,11 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         }
 
         if (templateYAML && !stages) {
-            setOutput(templateYAML)
+            setOutput(YAML_FROM_TEMPLATE_PROMPT(templateYAML))
         }
 
         if (!templateYAML && stages) {
-            setOutput(stages)
+            setOutput(COMPLETE_YAML_PROMPT(stages))
         }
 
     }, [userInput, setOutput])
@@ -227,8 +229,8 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
             </TechStack>
             <TypeOfGeneration generateCompleteYAML={generateCompleteYAML}
                               generateYAMLFromTemplate={generateYAMLFromTemplate}/>
-            {fromScratch && <TemplateInputSection setUserInput={setUserInput}/>}
-            {fromTemplate && <StageOptions setUserInput={setUserInput}/>}
+            {fromScratch && <StageOptions setUserInput={setUserInput}/>}
+            {fromTemplate && <TemplateInputSection setUserInput={setUserInput}/>}
         </Layout>
     )
 }
