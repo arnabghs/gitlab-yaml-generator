@@ -2,6 +2,7 @@ import {Box, Button, styled, TextField, useTheme} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {COMPLETE_YAML_PROMPT} from "../prompt_templates/go/generateFullYaml";
 import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFromTemplate";
+import {generateResponse} from "../api/openai";
 
 const Layout = styled(Box)(({theme}) => ({
     height: "100%",
@@ -193,7 +194,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         let stages = userInput?.stages
 
         if (templateYAML && stages) {
-            console.error("Both values cant be given simultaneously")
+            console.error("Both values can't be given simultaneously")
         }
 
         if (!templateYAML && stages?.length === 0) {
@@ -201,11 +202,23 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         }
 
         if (templateYAML && !stages) {
-            setOutput(YAML_FROM_TEMPLATE_PROMPT(templateYAML))
+            generateResponse(YAML_FROM_TEMPLATE_PROMPT(templateYAML))
+                .then(response => {
+                    console.log(response)
+
+                    const responseText = response?.choices?.shift()?.message?.content;
+                    setOutput(responseText)
+                })
         }
 
         if (!templateYAML && stages) {
-            setOutput(COMPLETE_YAML_PROMPT(stages))
+            generateResponse(COMPLETE_YAML_PROMPT(stages))
+                .then(response => {
+                    console.log(response)
+
+                    const responseText = response?.choices?.shift()?.message?.content;
+                    setOutput(responseText)
+                })
         }
 
     }, [userInput, setOutput])

@@ -77,11 +77,17 @@ const stagePromptMap: { [key: string]: string } = {
     "test": TestPrompt,
     "package": PackagePrompt,
     "publish": PublishPrompt,
+    "CloudDeploy": CloudDeployPrompt,
     "deploy": DeployPrompt,
     "DAST-scan": DastScanPrompt
 }
 
 const stagesToInclude = (stages: string[]): string => {
+    if (stages.includes("deploy")) {
+        let index = stages.findIndex((element) => element == "deploy")
+        stages.splice(index,0,"CloudDeploy")
+    }
+
     let actions = ""
     stages.forEach((stage, index) => {
         actions = actions + `${index + 3} - ${stagePromptMap[stage]}    `
