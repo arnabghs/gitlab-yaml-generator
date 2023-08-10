@@ -6,7 +6,6 @@ export const generateResponse = async (inputText: string) => {
         apiKey: process.env.REACT_APP_OPENAI_API_KEY,
     }));
 
-    console.log("api key is ", process.env.REACT_APP_OPENAI_API_KEY)
     try {
         const modelId = "gpt-3.5-turbo";
 
