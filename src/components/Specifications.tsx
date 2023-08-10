@@ -2,6 +2,7 @@ import {Box, Button, styled, TextField, useTheme} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {COMPLETE_YAML_PROMPT} from "../prompt_templates/go/generateFullYaml";
 import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFromTemplate";
+import {YAML_FROM_TEMPLATE_PROMPT_NODE} from "../prompt_templates/node/generateYamlFromTemplateNode"
 import {generateResponse} from "../api/openai";
 
 const Layout = styled(Box)(({theme}) => ({
@@ -20,14 +21,16 @@ const TechStack = styled(Box)(({theme}) => ({
     alignItems: "center"
 }))
 
+type TechStack = "GO" | "node" | "php" | "kotlin"
+
 type TechBtnProps = {
-    label: string
+    label: TechStack
     disabled: boolean
 }
 
 const TechStackButtons: TechBtnProps[] = [
     {label: "GO", disabled: false},
-    {label: "node", disabled: true},
+    {label: "node", disabled: false},
     {label: "php", disabled: true},
     {label: "kotlin", disabled: true}
 ]
@@ -188,6 +191,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
     const [fromScratch, setFromScratch] = useState(false)
     const [fromTemplate, setFromTemplate] = useState(false)
     const [userInput, setUserInput] = useState<UserInput>()
+    const [selectedTs, setSelectedTs] = useState<TechStack>()
 
     useEffect(() => {
         let templateYAML = userInput?.templateYAML
@@ -202,13 +206,25 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         }
 
         if (templateYAML && !stages) {
-            generateResponse(YAML_FROM_TEMPLATE_PROMPT(templateYAML))
+            if(selectedTs === "node" ){
+                generateResponse(YAML_FROM_TEMPLATE_PROMPT_NODE(templateYAML))
                 .then(response => {
                     console.log(response)
 
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
                 })
+            } else if (selectedTs === "GO") {
+                generateResponse(YAML_FROM_TEMPLATE_PROMPT(templateYAML))
+                .then(response => {
+                    console.log(response)
+
+                    const responseText = response?.choices?.shift()?.message?.content;
+                    setOutput(responseText)
+                })
+            } else {
+                console.log("selectedTs is neither node nor GO");
+            }            
         }
 
         if (!templateYAML && stages) {
@@ -233,11 +249,15 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         setFromTemplate(true)
     }
 
+    const handleTechStackButtonClick = (tsSelected: TechStack) => {
+        setSelectedTs(tsSelected)
+    };
+
     return (
         <Layout>
             <TechStack>
                 {TechStackButtons.map((tsBtn, index) => {
-                    return <Button variant="contained" disabled={tsBtn.disabled} key={index}>{tsBtn.label}</Button>
+                    return <Button variant="contained" disabled={tsBtn.disabled} key={index} onClick={() => handleTechStackButtonClick(tsBtn.label)}>{tsBtn.label}</Button>
                 })}
             </TechStack>
             <TypeOfGeneration generateCompleteYAML={generateCompleteYAML}
