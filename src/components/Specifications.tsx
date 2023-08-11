@@ -5,8 +5,8 @@ import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFrom
 import {getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
-import {BuildParam, StageProps, Stages, TechStackButtons, UserInput} from "../data/data";
 import {generateResponse} from "../api/openai";
+import {BuildParam, StageProps, Stages, TechStackButtons, UserInput} from "../data/data";
 
 const Layout = styled(Box)(({theme}) => ({
     height: "100%",
