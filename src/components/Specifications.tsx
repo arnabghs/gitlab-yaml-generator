@@ -2,6 +2,10 @@ import {Box, Button, styled, TextField, useTheme} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {COMPLETE_YAML_PROMPT} from "../prompt_templates/go/generateFullYaml";
 import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFromTemplate";
+import {getStageByName} from "../helpers/util";
+import {BuildOptions} from "./build/Build";
+import {DeployOptions} from "./deploy/Deploy";
+import {BuildParam, StageProps, Stages, TechStackButtons, UserInput} from "../data/data";
 import {generateResponse} from "../api/openai";
 
 const Layout = styled(Box)(({theme}) => ({
@@ -20,18 +24,6 @@ const TechStack = styled(Box)(({theme}) => ({
     alignItems: "center"
 }))
 
-type TechBtnProps = {
-    label: string
-    disabled: boolean
-}
-
-const TechStackButtons: TechBtnProps[] = [
-    {label: "GO", disabled: false},
-    {label: "node", disabled: true},
-    {label: "php", disabled: true},
-    {label: "kotlin", disabled: true}
-]
-
 const GenerationLayout = styled(Box)(({theme}) => ({
     width: "100%",
     height: "15%",
@@ -42,10 +34,8 @@ const GenerationLayout = styled(Box)(({theme}) => ({
 
 }))
 
-const TypeOfGeneration = ({
-                              generateCompleteYAML,
-                              generateYAMLFromTemplate
-                          }: { generateCompleteYAML: () => void, generateYAMLFromTemplate: () => void }) => {
+const TypeOfGeneration = ({generateCompleteYAML, generateYAMLFromTemplate}:
+                              { generateCompleteYAML: () => void, generateYAMLFromTemplate: () => void }) => {
     return (
         <GenerationLayout>
             <Button variant="outlined" onClick={generateCompleteYAML}> Generate from Scratch</Button>
@@ -136,27 +126,23 @@ const StageContainer = styled(Box)(({theme}) => ({
     gap: theme.spacing(2)
 }))
 
-type StageProps = {
-    name: string
-    selected: boolean
-}
 
 const StageOptions = ({setUserInput}: any) => {
-    let Stages: StageProps[] = [
-        {name: "static-checks", selected: false},
-        {name: "build", selected: false},
-        {name: "test", selected: false},
-        {name: "package", selected: false},
-        {name: "publish", selected: false},
-        {name: "deploy", selected: false},
-        {name: "DAST-scan", selected: false}
-    ]
-
     const [stageState, setStageState] = useState(Stages)
+    const [buildParams, setBuildParams] = useState<BuildParam>()
+    const [deployParams, setDeployParams] = useState([])
 
     const setEnabledStages = () => {
         const enabledStages = stageState.filter(st => st.selected).map(st => st.name)
-        setUserInput({stages: enabledStages})
+        setUserInput({stages: enabledStages, buildParams: buildParams, deployParams: deployParams})
+    }
+
+    const updateStageState = (stage: StageProps) => {
+        let updatedStageState = stageState.map(st => {
+            if (st.name === stage.name) return {...stage, selected: !stage.selected}
+            return st
+        })
+        setStageState(updatedStageState)
     }
 
     return (
@@ -164,14 +150,12 @@ const StageOptions = ({setUserInput}: any) => {
             <StageContainer>
                 {stageState.map((stage, index) => {
                     return <Button variant={stage.selected ? "contained" : "outlined"} onClick={() => {
-                        let updatedStageState = stageState.map(st => {
-                            if (st.name === stage.name) return {...stage, selected: !stage.selected}
-                            return st
-                        })
-                        setStageState(updatedStageState)
+                        updateStageState(stage)
                     }} key={index}>{stage.name}</Button>
                 })}
             </StageContainer>
+            {getStageByName(stageState, "build").selected && <BuildOptions setBuildParams={setBuildParams}/>}
+            {getStageByName(stageState, "deploy").selected && <DeployOptions setDeployParams={setDeployParams}/>}
             <SubmitBtnContainer>
                 <Button variant="contained" onClick={setEnabledStages}> Submit</Button>
             </SubmitBtnContainer>
@@ -179,10 +163,6 @@ const StageOptions = ({setUserInput}: any) => {
     )
 }
 
-type UserInput = {
-    stages?: string[]
-    templateYAML?: string
-}
 
 const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void }) => {
     const [fromScratch, setFromScratch] = useState(false)
@@ -192,34 +172,38 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
     useEffect(() => {
         let templateYAML = userInput?.templateYAML
         let stages = userInput?.stages
+        let buildParams = userInput?.buildParams
+        let deployParams = userInput?.deployParams
 
         if (templateYAML && stages) {
             console.error("Both values can't be given simultaneously")
+            return
         }
 
         if (!templateYAML && stages?.length === 0) {
             console.error("No input is given")
+            return
         }
 
         if (templateYAML && !stages) {
             generateResponse(YAML_FROM_TEMPLATE_PROMPT(templateYAML))
                 .then(response => {
-                    console.log(response)
-
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
                 })
+            return
         }
 
         if (!templateYAML && stages) {
-            generateResponse(COMPLETE_YAML_PROMPT(stages))
+            generateResponse(COMPLETE_YAML_PROMPT(stages, buildParams, deployParams))
                 .then(response => {
-                    console.log(response)
-
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
                 })
+            return
         }
+
+        setOutput("Please choose the options properly")
 
     }, [userInput, setOutput])
 

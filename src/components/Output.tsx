@@ -42,7 +42,7 @@ const OutputSection = ({output}: { output: any }) => {
         <Layout>
             <Box height="5%" textAlign="center"><Typography variant="h4">Generated YAML:</Typography></Box>
             <CopyToClipboardButton yamlOutput={output}/>
-            <CodeContainer> {output}</CodeContainer>
+            <CodeContainer><pre>{output}</pre></CodeContainer>
         </Layout>
     )
 }
