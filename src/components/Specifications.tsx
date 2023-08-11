@@ -7,7 +7,7 @@ import {getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
 import {generateResponse} from "../api/openai";
-import {BuildParam, StageProps, Stages, TechStackButtons, UserInput, TechStack} from "../data/data";
+import {BuildParam, StageProps, Stages, TechStackButtons, UserInput, TechStackType} from "../data/data";
 
 const Layout = styled(Box)(({theme}) => ({
     height: "100%",
@@ -169,7 +169,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
     const [fromScratch, setFromScratch] = useState(false)
     const [fromTemplate, setFromTemplate] = useState(false)
     const [userInput, setUserInput] = useState<UserInput>()
-    const [selectedTs, setSelectedTs] = useState<TechStack>()
+    const [selectedTs, setSelectedTs] = useState<TechStackType>()
 
     useEffect(() => {
         let templateYAML = userInput?.templateYAML
@@ -228,7 +228,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         setFromTemplate(true)
     }
 
-    const handleTechStackButtonClick = (tsSelected: TechStack) => {
+    const handleTechStackButtonClick = (tsSelected: TechStackType) => {
         setSelectedTs(tsSelected)
     };
 

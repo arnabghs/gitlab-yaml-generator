@@ -14,10 +14,10 @@ export type UserInput = {
     deployParams?: string[]
 }
 
-export type TechStack = "GO" | "node" | "php" | "kotlin"
+export type TechStackType = "GO" | "node" | "php" | "kotlin"
 
 export type TechBtnProps = {
-    label: TechStack
+    label: TechStackType
     disabled: boolean
 }
 
