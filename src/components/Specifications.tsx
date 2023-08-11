@@ -5,7 +5,7 @@ import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFrom
 import {getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
-import {BuildParam, Stages, TechStackButtons, UserInput} from "../data/data";
+import {BuildParam, StageProps, Stages, TechStackButtons, UserInput} from "../data/data";
 import {generateResponse} from "../api/openai";
 
 const Layout = styled(Box)(({theme}) => ({
@@ -137,16 +137,20 @@ const StageOptions = ({setUserInput}: any) => {
         setUserInput({stages: enabledStages, buildParams: buildParams, deployParams: deployParams})
     }
 
+    const updateStageState = (stage: StageProps) => {
+        let updatedStageState = stageState.map(st => {
+            if (st.name === stage.name) return {...stage, selected: !stage.selected}
+            return st
+        })
+        setStageState(updatedStageState)
+    }
+
     return (
         <StageOptionsLayout>
             <StageContainer>
                 {stageState.map((stage, index) => {
                     return <Button variant={stage.selected ? "contained" : "outlined"} onClick={() => {
-                        let updatedStageState = stageState.map(st => {
-                            if (st.name === stage.name) return {...stage, selected: !stage.selected}
-                            return st
-                        })
-                        setStageState(updatedStageState)
+                        updateStageState(stage)
                     }} key={index}>{stage.name}</Button>
                 })}
             </StageContainer>
