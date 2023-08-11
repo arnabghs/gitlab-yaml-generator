@@ -14,14 +14,16 @@ export type UserInput = {
     deployParams?: string[]
 }
 
+export type TechStack = "GO" | "node" | "php" | "kotlin"
+
 export type TechBtnProps = {
-    label: string
+    label: TechStack
     disabled: boolean
 }
 
 export const TechStackButtons: TechBtnProps[] = [
     {label: "GO", disabled: false},
-    {label: "node", disabled: true},
+    {label: "node", disabled: false},
     {label: "php", disabled: true},
     {label: "kotlin", disabled: true}
 ]

@@ -2,15 +2,12 @@ import {Box, Button, styled, TextField, useTheme} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {COMPLETE_YAML_PROMPT} from "../prompt_templates/go/generateFullYaml";
 import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFromTemplate";
-<<<<<<< HEAD
+import {YAML_FROM_TEMPLATE_PROMPT_NODE} from "../prompt_templates/node/generateYamlFromTemplateNode";
 import {getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
-=======
-import {YAML_FROM_TEMPLATE_PROMPT_NODE} from "../prompt_templates/node/generateYamlFromTemplateNode"
->>>>>>> b32b3c2 (Add logic to generate yaml from template for node with empty prompt)
 import {generateResponse} from "../api/openai";
-import {BuildParam, StageProps, Stages, TechStackButtons, UserInput} from "../data/data";
+import {BuildParam, StageProps, Stages, TechStackButtons, UserInput, TechStack} from "../data/data";
 
 const Layout = styled(Box)(({theme}) => ({
     height: "100%",
@@ -28,23 +25,6 @@ const TechStack = styled(Box)(({theme}) => ({
     alignItems: "center"
 }))
 
-<<<<<<< HEAD
-=======
-type TechStack = "GO" | "node" | "php" | "kotlin"
-
-type TechBtnProps = {
-    label: TechStack
-    disabled: boolean
-}
-
-const TechStackButtons: TechBtnProps[] = [
-    {label: "GO", disabled: false},
-    {label: "node", disabled: false},
-    {label: "php", disabled: true},
-    {label: "kotlin", disabled: true}
-]
-
->>>>>>> b32b3c2 (Add logic to generate yaml from template for node with empty prompt)
 const GenerationLayout = styled(Box)(({theme}) => ({
     width: "100%",
     height: "15%",
@@ -214,21 +194,15 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
                 })
-<<<<<<< HEAD
-            return
-=======
             } else if (selectedTs === "GO") {
                 generateResponse(YAML_FROM_TEMPLATE_PROMPT(templateYAML))
                 .then(response => {
-                    console.log(response)
-
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
                 })
             } else {
                 console.log("selectedTs is neither node nor GO");
-            }            
->>>>>>> b32b3c2 (Add logic to generate yaml from template for node with empty prompt)
+            }  
         }
 
         if (!templateYAML && stages) {
