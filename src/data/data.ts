@@ -1,5 +1,7 @@
 export type Stage = "static-checks" | "build" | "test" | "package" | "publish" | "deploy" | "DAST-scan"
 
+export type StaticCheckJobName = "lint" | "gemnasium-dependency_scanning"
+
 export type StageProps = {
     name: Stage
     selected: boolean
@@ -12,6 +14,7 @@ export type UserInput = {
     templateYAML?: string
     buildParams?: BuildParam
     deployParams?: string[]
+    staticCheckParams?: StaticCheckJobName[]
 }
 
 export type TechBtnProps = {

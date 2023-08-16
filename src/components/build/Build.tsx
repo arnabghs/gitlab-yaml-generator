@@ -1,22 +1,10 @@
 import React, {useEffect, useState} from "react";
-import {Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, styled, Typography} from "@mui/material";
+import {SelectChangeEvent} from "@mui/material";
+import {SingleOptionSelector, StageOptions} from "../shared/StageOptions";
 
-const BuildOptionContainer = styled(Box)(({theme}) => ({
-    width: "90%",
-    border: "1px solid black",
-    borderRadius: theme.spacing(2),
-    padding: theme.spacing(4),
-    display: "flex",
-    justifyContent: "center",
-    margin: theme.spacing(1)
-}))
 
-const BuildFormContainer = styled(Box)(({theme}) => ({
-    width: "50%",
-    display: "flex",
-    flexDirection: "column",
-    gap: theme.spacing(4),
-}))
+const GOOSOptions = ["darwin", "linux", "windows"]
+const GOARCHOptions = ["amd64", "arm64"]
 
 const BuildOptions = ({setBuildParams}: any) => {
     const [GOOS, setGOOS] = useState("")
@@ -34,36 +22,12 @@ const BuildOptions = ({setBuildParams}: any) => {
         setBuildParams({"GOOS": GOOS, "GOARCH": GOARCH})
     }, [GOOS, GOARCH, setBuildParams])
 
-    return <BuildOptionContainer>
-        <Box width="20%" display="flex" justifyContent="center" alignItems="center">
-            <Typography variant="h5">Build</Typography>
-        </Box>
-        <BuildFormContainer>
-            <FormControl fullWidth>
-                <InputLabel>GOOS</InputLabel>
-                <Select
-                    value={GOOS}
-                    label="GOOS"
-                    onChange={updateGOOS}
-                >
-                    <MenuItem value={"darwin"}>Darwin</MenuItem>
-                    <MenuItem value={"linux"}>Linux</MenuItem>
-                    <MenuItem value={"windows"}>Windows</MenuItem>
-                </Select>
-            </FormControl>
-            <FormControl fullWidth>
-                <InputLabel>GOARCH</InputLabel>
-                <Select
-                    value={GOARCH}
-                    label="GOARCH"
-                    onChange={updateGOARCH}
-                >
-                    <MenuItem value={"amd64"}>amd64</MenuItem>
-                    <MenuItem value={"arm64"}>arm64</MenuItem>
-                </Select>
-            </FormControl>
-        </BuildFormContainer>
-    </BuildOptionContainer>
+    return (
+        <StageOptions stageName={"Build"}>
+            <SingleOptionSelector selectedItem={GOOS} onChange={updateGOOS} items={GOOSOptions} label={"GOOS"}/>
+            <SingleOptionSelector selectedItem={GOARCH} onChange={updateGOARCH} items={GOARCHOptions} label={"GOARCH"}/>
+        </StageOptions>
+    )
 }
 
 export {BuildOptions}

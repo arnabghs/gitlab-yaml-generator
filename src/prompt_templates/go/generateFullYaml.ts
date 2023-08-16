@@ -1,4 +1,4 @@
-import {BuildParam, Stage} from "../../data/data";
+import {BuildParam, Stage, StaticCheckJobName} from "../../data/data";
 
 const VariablesPrompt = `
     Use variables:
@@ -8,11 +8,20 @@ const VariablesPrompt = `
      - 'DAST_ENDPOINT' to be used in 'zap-baseline-dast' job. Use value "https://apidev.my-app.com"
 `
 
-const StaticCheckPrompt = `
-    'static-checks' stage will contain following job names:
-     - 'lint': this job will run linter for the golang repository using 'golangci-lint' tool. Use the docker image in '$GOLINT_IMAGE' variable. Output format should be 'code-climate'. Pass the output in artefacts as gitlab 'codequality' reports.
-     - 'gemnasium-dependency_scanning': this job uses the gitlab template 'Security/Dependency-Scanning.gitlab-ci.yml' to run dependency check. Pass the job report in artefacts as 'dependency_scanning' reports.
-`
+const staticCheckPrompt = (jobs?: StaticCheckJobName[]): string => {
+    if (!Array.isArray(jobs)) return ""
+
+    let jobPrompt: { [key: string]: string } = {
+        "lint": "this job will run linter for the golang repository using 'golangci-lint' tool. Use the docker image in '$GOLINT_IMAGE' variable. Output format should be 'code-climate'. Pass the output in artefacts as gitlab 'codequality' reports.",
+        "gemnasium-dependency_scanning": "this job uses the gitlab template 'Security/Dependency-Scanning.gitlab-ci.yml' to run dependency check. Pass the job report in artefacts as 'dependency_scanning' reports."
+    }
+
+    return jobs.reduce((prevInstruction, job) => {
+        return prevInstruction + `  - '${job}': ${jobPrompt[job]}
+        `
+    }, `'static-checks' stage will contain following job names:
+        `)
+}
 
 const buildPrompt = (buildParam?: BuildParam): string => {
     if (!buildParam) return ""
@@ -41,16 +50,14 @@ const CloudDeployPrompt = `
     create a gitlab job named '.cloud-deploy' without associating it any stage. It will use 'amazon/aws-cli:2.11.7' image to deploy the image into AWS ECS. First it is going register-task-definition with cli input json '$TASK_DEFINITION_FILE' and aws profile '$AWS_PROFILE' variable into '$AWS_DEFAULT_REGION' region. Next, it will update-service with cli input json '$SERVICE_DEFINITION_FILE', service-name '$SERVICE_NAME' and cluster '$CLUSTER_NAME' in '$AWS_DEFAULT_REGION' region.
 `
 
-const deployPrompt = (deployParams?: string[]): string => {
-    if (!Array.isArray(deployParams)) return ""
+const deployPrompt = (envs?: string[]): string => {
+    if (!Array.isArray(envs)) return ""
 
-    let finalInstruction = deployParams.reduce((prevInstruction, env) => {
-        return prevInstruction + `- 'deploy-${env}': this job will extend '.cloud-deploy'. Use environment name: '${env}'
+    return envs.reduce((prevInstruction, env) => {
+        return prevInstruction + `  - 'deploy-${env}': this job will extend '.cloud-deploy'. Use environment name: '${env}'
         `
     }, `'deploy' stage will contain following job names:
         `)
-
-    return finalInstruction
 }
 const DastScanPrompt = `
     'DAST-scan' stage will contain following job names:
@@ -70,9 +77,9 @@ const IncludeStagesPrompt = (stages: Stage[]): string => {
     return promptString
 }
 
-const stagesToInclude = (stages: Stage[], buildParams?: BuildParam, deployParams?: string[]): string => {
+const stagesToInclude = (stages: Stage[], buildParams?: BuildParam, deployParams?: string[], staticCheckParams?: StaticCheckJobName[]): string => {
     const stagePromptMap: { [key: string]: string } = {
-        "static-checks": StaticCheckPrompt,
+        "static-checks": staticCheckPrompt(staticCheckParams),
         "build": buildPrompt(buildParams),
         "test": TestPrompt,
         "package": PackagePrompt,
@@ -91,13 +98,14 @@ const stagesToInclude = (stages: Stage[], buildParams?: BuildParam, deployParams
 
     let actions = ""
     promptKeys.forEach((promptKey, index) => {
-        actions = actions + `${index + 3} - ${stagePromptMap[promptKey]}    `
+        actions = actions + `${index + 3} - ${stagePromptMap[promptKey]}
+    `
     })
 
     return actions
 }
 
-const COMPLETE_YAML_PROMPT = (stages: Stage[], buildParams?: BuildParam, deployParams?: string[]): string => `
+const COMPLETE_YAML_PROMPT = (stages: Stage[], buildParams?: BuildParam, deployParams?: string[], staticCheckParams?: StaticCheckJobName[]): string => `
     I want you to act as an Devops consultant. I will provide some specific information about different jobs and stages of a gitlab pipeline and it will be your job to generate a .gitlab-ci.yml file based on the requirements. You should use your computer science, CI/CD pipeline, golang, docker, AWS and gitlab knowledge to solve my problem.
   I want you to reply with the .gitlab-ci.yml file only, do not write any explanations. My first request is delimited by triple backticks(\`\`\`) -
   \`\`\`
@@ -107,7 +115,7 @@ const COMPLETE_YAML_PROMPT = (stages: Stage[], buildParams?: BuildParam, deployP
     
     2 - ${VariablesPrompt}
     
-    ${stagesToInclude(stages, buildParams, deployParams)}
+    ${stagesToInclude(stages, buildParams, deployParams, staticCheckParams)}
     
   Note: Map the job names attentively with the stages. Don't create any template unless specifically instructed, define the jobs directly.
   \`\`\`
