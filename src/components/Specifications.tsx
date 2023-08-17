@@ -7,6 +7,7 @@ import {getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
 import {generateResponse} from "../api/openai";
+import {generateResponseWithInContextLearn} from "../api/openaiInContextLearn";
 import {BuildParam, StageProps, Stages, TechStackButtons, UserInput, TechStackType} from "../data/data";
 
 const Layout = styled(Box)(({theme}) => ({
@@ -189,7 +190,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
 
         if (templateYAML && !stages) {
             if(selectedTs === "node" ){
-                generateResponse(YAML_FROM_TEMPLATE_PROMPT_NODE(templateYAML))
+                generateResponseWithInContextLearn(YAML_FROM_TEMPLATE_PROMPT_NODE(templateYAML))
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
@@ -206,11 +207,17 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         }
 
         if (!templateYAML && stages) {
-            generateResponse(COMPLETE_YAML_PROMPT(stages, buildParams, deployParams))
+            if(selectedTs === "GO") {
+                generateResponse(COMPLETE_YAML_PROMPT(stages, buildParams, deployParams))
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
                 })
+            } else if(selectedTs === "node") {
+                console.log("Implementation in progress for node")
+            } else {
+                console.log("selectedTs is neither node nor GO")
+            }
             return
         }
 
