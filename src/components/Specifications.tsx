@@ -7,15 +7,16 @@ import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
 import {generateResponse} from "../api/openai";
 import {BuildParam, StageProps, Stages, TechStackButtons, UserInput} from "../data/data";
+import {StaticCheckOptions} from "./staticChecks/StaticCheck";
 
-const Layout = styled(Box)(({theme}) => ({
+const Layout = styled(Box)(() => ({
     height: "100%",
     width: "50%",
     display: "flex",
     flexDirection: "column",
 }))
 
-const TechStack = styled(Box)(({theme}) => ({
+const TechStack = styled(Box)(() => ({
     width: "100%",
     height: "15%",
     display: "flex",
@@ -24,7 +25,7 @@ const TechStack = styled(Box)(({theme}) => ({
     alignItems: "center"
 }))
 
-const GenerationLayout = styled(Box)(({theme}) => ({
+const GenerationLayout = styled(Box)(() => ({
     width: "100%",
     height: "15%",
     display: "flex",
@@ -44,7 +45,7 @@ const TypeOfGeneration = ({generateCompleteYAML, generateYAMLFromTemplate}:
     )
 }
 
-const TemplateInputLayout = styled(Box)(({theme}) => ({
+const TemplateInputLayout = styled(Box)(() => ({
     width: "100%",
     height: "60%",
     textAlign: "center"
@@ -54,7 +55,7 @@ const FormContainer = styled("form")(() => ({
     height: "100%"
 }))
 
-const CustomTextField = styled(TextField)(({theme}) => ({
+const CustomTextField = styled(TextField)(() => ({
     '& .MuiOutlinedInput-root': {
         alignItems: "start",
         '& input': {
@@ -100,7 +101,7 @@ const TemplateInputSection = ({setUserInput}: any) => {
     )
 }
 
-const StageOptionsLayout = styled(Box)(({theme}) => ({
+const StageOptionsLayout = styled(Box)(() => ({
     width: "100%",
     height: "60%",
     display: "flex",
@@ -109,7 +110,7 @@ const StageOptionsLayout = styled(Box)(({theme}) => ({
     alignItems: "center",
 }))
 
-const SubmitBtnContainer = styled(Box)(({theme}) => ({
+const SubmitBtnContainer = styled(Box)(() => ({
     height: "50%",
     display: "flex",
     alignItems: "center",
@@ -131,10 +132,16 @@ const StageOptions = ({setUserInput}: any) => {
     const [stageState, setStageState] = useState(Stages)
     const [buildParams, setBuildParams] = useState<BuildParam>()
     const [deployParams, setDeployParams] = useState([])
+    const [staticCheckParams, setStaticCheckParams] = useState([])
 
     const setEnabledStages = () => {
         const enabledStages = stageState.filter(st => st.selected).map(st => st.name)
-        setUserInput({stages: enabledStages, buildParams: buildParams, deployParams: deployParams})
+        setUserInput({
+            stages: enabledStages,
+            buildParams: buildParams,
+            deployParams: deployParams,
+            staticCheckParams: staticCheckParams
+        })
     }
 
     const updateStageState = (stage: StageProps) => {
@@ -156,6 +163,8 @@ const StageOptions = ({setUserInput}: any) => {
             </StageContainer>
             {getStageByName(stageState, "build").selected && <BuildOptions setBuildParams={setBuildParams}/>}
             {getStageByName(stageState, "deploy").selected && <DeployOptions setDeployParams={setDeployParams}/>}
+            {getStageByName(stageState, "static-checks").selected &&
+                <StaticCheckOptions setStaticCheckParams={setStaticCheckParams}/>}
             <SubmitBtnContainer>
                 <Button variant="contained" onClick={setEnabledStages}> Submit</Button>
             </SubmitBtnContainer>
@@ -174,6 +183,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         let stages = userInput?.stages
         let buildParams = userInput?.buildParams
         let deployParams = userInput?.deployParams
+        let staticCheckParams = userInput?.staticCheckParams
 
         if (templateYAML && stages) {
             console.error("Both values can't be given simultaneously")
@@ -186,7 +196,8 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         }
 
         if (templateYAML && !stages) {
-            generateResponse(YAML_FROM_TEMPLATE_PROMPT(templateYAML))
+            let promptInput = YAML_FROM_TEMPLATE_PROMPT(templateYAML)
+            generateResponse(promptInput)
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
@@ -195,15 +206,14 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         }
 
         if (!templateYAML && stages) {
-            generateResponse(COMPLETE_YAML_PROMPT(stages, buildParams, deployParams))
+            let promptInput = COMPLETE_YAML_PROMPT(stages, buildParams, deployParams, staticCheckParams)
+            generateResponse(promptInput)
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
                 })
             return
         }
-
-        setOutput("Please choose the options properly")
 
     }, [userInput, setOutput])
 
