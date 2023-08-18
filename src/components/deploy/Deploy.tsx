@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import {MultiOptionSelector, StageOptions} from "../shared/StageOptions";
+import {MultiOptionSelector, OptionsDropdown} from "../shared/OptionsDropdown";
 import {SelectChangeEvent} from "@mui/material";
 
 
@@ -25,10 +25,10 @@ const DeployOptions = ({setDeployParams}: any) => {
     }, [envs, setDeployParams])
 
     return (
-        <StageOptions stageName={"Deploy"}>
+        <OptionsDropdown stageName={"Deploy"}>
             <MultiOptionSelector availableOptions={Envs} selectedOptions={envs} handleChange={handleChange}
                                  label={"Env"}/>
-        </StageOptions>
+        </OptionsDropdown>
     )
 }
 

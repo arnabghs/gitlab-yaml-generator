@@ -1,4 +1,4 @@
-import {Box, Button, styled, TextField, useTheme} from "@mui/material";
+import {Box, Button, styled, useTheme} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {COMPLETE_YAML_PROMPT} from "../prompt_templates/go/generateFullYaml";
 import {COMPLETE_YAML_PROMPT_NODE} from "../prompt_templates/node/generateFullYamlNode";
@@ -7,10 +7,11 @@ import {YAML_FROM_TEMPLATE_PROMPT_NODE} from "../prompt_templates/node/generateY
 import {getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
+import {StaticCheckOptions} from "./staticChecks/StaticCheck";
 import {generateResponse} from "../api/openai";
 import {generateResponseWithInContextLearn} from "../api/openaiInContextLearn";
 import {BuildParam, StageProps, Stages, TechStackButtons, UserInput, TechStackType} from "../data/data";
-import {StaticCheckOptions} from "./staticChecks/StaticCheck";
+import {CustomTextField, FormContainer} from "./shared/InputForm";
 
 const Layout = styled(Box)(() => ({
     height: "100%",
@@ -54,21 +55,6 @@ const TemplateInputLayout = styled(Box)(() => ({
     textAlign: "center"
 }))
 
-const FormContainer = styled("form")(() => ({
-    height: "100%"
-}))
-
-const CustomTextField = styled(TextField)(() => ({
-    '& .MuiOutlinedInput-root': {
-        alignItems: "start",
-        '& input': {
-            // padding: '4px 8px',
-        },
-    },
-    '& .MuiInputBase-root': {
-        height: "100%",
-    },
-}))
 
 const TemplateInputSection = ({setUserInput}: any) => {
     const theme = useTheme()
@@ -180,7 +166,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
     const [fromScratch, setFromScratch] = useState(false)
     const [fromTemplate, setFromTemplate] = useState(false)
     const [userInput, setUserInput] = useState<UserInput>()
-    const [selectedTs, setSelectedTs] = useState<TechStackType>(); 
+    const [selectedTs, setSelectedTs] = useState<TechStackType>();
 
     useEffect(() => {
         let templateYAML = userInput?.templateYAML
@@ -215,7 +201,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
                 })
             } else {
                 console.log("selectedTs is neither node nor GO");
-            }  
+            }
         }
 
         if (!templateYAML && stages) {

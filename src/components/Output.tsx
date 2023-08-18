@@ -1,5 +1,8 @@
-import {Box, Button, Snackbar, styled, Typography} from "@mui/material";
-import React, {useState} from "react";
+import {Box, styled, Typography} from "@mui/material";
+import React from "react";
+import {CopyToClipboardButton} from "./output/CopyBtn";
+import {DownloadButton} from "./output/DownloadBtn";
+import {UploadToGitlabBtn} from "./output/UploadToGitlab";
 
 const Layout = styled(Box)(({theme}) => ({
     height: "auto",
@@ -17,32 +20,26 @@ const CodeContainer = styled(Box)(({theme}) => ({
     padding: theme.spacing(4)
 }))
 
-const CopyToClipboardButton = ({yamlOutput}: any) => {
-    const [open, setOpen] = useState(false)
-    const handleClick = () => {
-        setOpen(true)
-        navigator.clipboard.writeText(yamlOutput)
-    }
+const ButtonBar = styled(Box)(({theme}) => ({
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: theme.spacing(4),
+    height: "5%"
+}))
 
-    return (
-        <>
-            <Button onClick={handleClick}>COPY</Button>
-            <Snackbar
-                open={open}
-                onClose={() => setOpen(false)}
-                autoHideDuration={2000}
-                message="Copied to clipboard"
-            />
-        </>
-    )
-}
-
-const OutputSection = ({output}: { output: any }) => {
+const OutputSection = ({output}: { output: string }) => {
     return (
         <Layout>
             <Box height="5%" textAlign="center"><Typography variant="h4">Generated YAML:</Typography></Box>
-            <CopyToClipboardButton yamlOutput={output}/>
-            <CodeContainer><pre>{output}</pre></CodeContainer>
+            <ButtonBar>
+                <CopyToClipboardButton yamlOutput={output}/>
+                <DownloadButton yamlOutput={output}/>
+                <UploadToGitlabBtn yamlOutput={output}/>
+            </ButtonBar>
+            <CodeContainer>
+                <pre>{output}</pre>
+            </CodeContainer>
         </Layout>
     )
 }

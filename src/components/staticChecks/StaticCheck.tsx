@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import {StaticCheckJobName} from "../../data/data";
-import {MultiOptionSelector, StageOptions} from "../shared/StageOptions";
+import {MultiOptionSelector, OptionsDropdown} from "../shared/OptionsDropdown";
 import {SelectChangeEvent} from "@mui/material";
 
 const Jobs: StaticCheckJobName[] = [
@@ -23,9 +23,9 @@ const StaticCheckOptions = ({setStaticCheckParams}: any) => {
     }, [jobs, setStaticCheckParams])
 
     return (
-        <StageOptions stageName={"Static-Check"}>
+        <OptionsDropdown stageName={"Static-Check"}>
             <MultiOptionSelector availableOptions={Jobs} selectedOptions={jobs} handleChange={handleChange} label={"Job"}/>
-        </StageOptions>
+        </OptionsDropdown>
     )
 }
 

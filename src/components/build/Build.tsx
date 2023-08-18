@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {SelectChangeEvent} from "@mui/material";
-import {SingleOptionSelector, StageOptions} from "../shared/StageOptions";
+import {SingleOptionSelector, OptionsDropdown} from "../shared/OptionsDropdown";
 
 
 const GOOSOptions = ["darwin", "linux", "windows"]
@@ -23,10 +23,10 @@ const BuildOptions = ({setBuildParams}: any) => {
     }, [GOOS, GOARCH, setBuildParams])
 
     return (
-        <StageOptions stageName={"Build"}>
+        <OptionsDropdown stageName={"Build"}>
             <SingleOptionSelector selectedItem={GOOS} onChange={updateGOOS} items={GOOSOptions} label={"GOOS"}/>
             <SingleOptionSelector selectedItem={GOARCH} onChange={updateGOARCH} items={GOARCHOptions} label={"GOARCH"}/>
-        </StageOptions>
+        </OptionsDropdown>
     )
 }
 

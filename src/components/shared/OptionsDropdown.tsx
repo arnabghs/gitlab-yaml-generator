@@ -106,7 +106,7 @@ const SingleOptionSelector = ({selectedItem, items, onChange, label}:
     )
 }
 
-const StageOptions = ({stageName, children}: { stageName: string, children: React.ReactNode }) => {
+const OptionsDropdown = ({stageName, children}: { stageName: string, children: React.ReactNode }) => {
     return <StageOptionContainer>
         <StageLabel><Typography variant="h5">{stageName}</Typography></StageLabel>
         <OptionsFormContainer>
@@ -115,4 +115,4 @@ const StageOptions = ({stageName, children}: { stageName: string, children: Reac
     </StageOptionContainer>
 }
 
-export {StageOptionContainer, OptionsFormContainer, StageOptions, StageLabel, SingleOptionSelector, MultiOptionSelector}
+export {StageOptionContainer, OptionsFormContainer, OptionsDropdown, StageLabel, SingleOptionSelector, MultiOptionSelector}
