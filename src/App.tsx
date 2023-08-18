@@ -3,7 +3,7 @@ import {Box, styled} from "@mui/material";
 import {SpecificationSection} from "./components/Specifications";
 import {OutputSection} from "./components/Output";
 
-const AppContainer = styled(Box)(({theme}) => ({
+const AppContainer = styled(Box)(() => ({
     height: "100vh",
     width: "100vw",
     display: "flex"
@@ -16,7 +16,7 @@ function App() {
     return (
         <AppContainer>
             <SpecificationSection setOutput={setOutput}/>
-            <OutputSection output={output}/>
+            <OutputSection outputStr={output}/>
         </AppContainer>
     );
 }

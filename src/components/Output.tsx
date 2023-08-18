@@ -4,7 +4,7 @@ import {CopyToClipboardButton} from "./output/CopyBtn";
 import {DownloadButton} from "./output/DownloadBtn";
 import {UploadToGitlabBtn} from "./output/UploadToGitlab";
 
-const Layout = styled(Box)(({theme}) => ({
+const Layout = styled(Box)(() => ({
     height: "auto",
     width: "50%",
     display: "flex",
@@ -28,7 +28,17 @@ const ButtonBar = styled(Box)(({theme}) => ({
     height: "5%"
 }))
 
-const OutputSection = ({output}: { output: string }) => {
+const formatOutput = (output: string): string => {
+    let outputArr = output.split("\n")
+    outputArr.pop()
+    outputArr.shift()
+
+    return outputArr.join("\n")
+}
+
+const OutputSection = ({outputStr}: { outputStr: string }) => {
+    const output = formatOutput(outputStr)
+
     return (
         <Layout>
             <Box height="5%" textAlign="center"><Typography variant="h4">Generated YAML:</Typography></Box>
