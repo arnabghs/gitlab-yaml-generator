@@ -1,6 +1,8 @@
-import axios from "axios";
+import axios, {AxiosError, AxiosResponse} from "axios";
 
-const uploadToGitlab = (uploadOption: string, repoID: string, accessToken: string, branch: string, yamlOutput: string): void => {
+const uploadToGitlab = (uploadOption: string, repoID: string, accessToken: string, branch: string, yamlOutput: string,
+                        setIsLoading: (b: boolean) => void,
+                        handleClose: () => void): void => {
     let method = ""
 
     if (uploadOption === "create") {
@@ -11,7 +13,7 @@ const uploadToGitlab = (uploadOption: string, repoID: string, accessToken: strin
         method = "put"
     }
 
-    axios({
+    let response = axios({
         method: method,
         url: `https://gitlab.com/api/v4/projects/${repoID}/repository/files/.gitlab-ci.yml`,
         data: {
@@ -23,6 +25,14 @@ const uploadToGitlab = (uploadOption: string, repoID: string, accessToken: strin
         },
         headers: {'Content-Type': 'application/json', 'PRIVATE-TOKEN': accessToken},
     });
+
+    response.then((res: AxiosResponse) => {
+        setIsLoading(false)
+        if (res.status >= 200 && res.status < 300) {
+            handleClose()
+            console.log("Push successful !")
+        }
+    }).catch((err: AxiosError) => alert(err.code))
 }
 
 export {uploadToGitlab}

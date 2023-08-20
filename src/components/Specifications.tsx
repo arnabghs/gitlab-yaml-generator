@@ -162,7 +162,11 @@ const StageOptions = ({setUserInput}: any, selectedTs: TechStackType) => {
 }
 
 
-const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void }) => {
+const SpecificationSection = ({setOutput, setIsGptResponseLoading}:
+                                  {
+                                      setOutput: (result: string) => void,
+                                      setIsGptResponseLoading: (b: boolean) => void
+                                  }) => {
     const [fromScratch, setFromScratch] = useState(false)
     const [fromTemplate, setFromTemplate] = useState(false)
     const [userInput, setUserInput] = useState<UserInput>()
@@ -186,18 +190,21 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         }
 
         if (templateYAML && !stages) {
+            setIsGptResponseLoading(true)
             if(selectedTs === "node" ){
                 generateResponseWithInContextLearn(YAML_FROM_TEMPLATE_PROMPT_NODE(templateYAML))
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
-                    setOutput(responseText)
+                    setOutput(responseText as string)
+                    setIsGptResponseLoading(false)
                 })
             } else if (selectedTs === "GO") {
                 let promptInput = YAML_FROM_TEMPLATE_PROMPT(templateYAML)
                 generateResponse(promptInput)
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
-                    setOutput(responseText)
+                    setOutput(responseText as string)
+                    setIsGptResponseLoading(false)
                 })
             } else {
                 console.log("selectedTs is neither node nor GO");
@@ -205,19 +212,22 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         }
 
         if (!templateYAML && stages) {
+            setIsGptResponseLoading(true)
             if(selectedTs === "GO") {
                 let promptInput = COMPLETE_YAML_PROMPT(stages, buildParams, deployParams, staticCheckParams)
                 generateResponse(promptInput)
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
-                    setOutput(responseText)
+                    setOutput(responseText as string)
+                    setIsGptResponseLoading(false)
                 })
             } else if(selectedTs === "node") {
                 let promptInput = COMPLETE_YAML_PROMPT_NODE(stages, deployParams, staticCheckParams)
                 generateResponse(promptInput)
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
-                    setOutput(responseText)
+                    setOutput(responseText as string)
+                    setIsGptResponseLoading(false)
                 })
             } else {
                 console.log("selectedTs is neither node nor GO")
@@ -225,7 +235,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
             return
         }
 
-    }, [userInput, setOutput, selectedTs])
+    }, [userInput, setOutput,setIsGptResponseLoading, selectedTs])
 
     const generateCompleteYAML = () => {
         setFromScratch(true)

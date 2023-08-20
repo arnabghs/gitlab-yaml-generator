@@ -3,6 +3,7 @@ import React from "react";
 import {CopyToClipboardButton} from "./output/CopyBtn";
 import {DownloadButton} from "./output/DownloadBtn";
 import {UploadToGitlabBtn} from "./output/UploadToGitlab";
+import CatGif from "../images/loading-fast.gif";
 
 const Layout = styled(Box)(() => ({
     height: "auto",
@@ -18,6 +19,12 @@ const CodeContainer = styled(Box)(({theme}) => ({
     backgroundColor: "#f1f7d5",
     overflow: "auto",
     padding: theme.spacing(4)
+}))
+
+const LoaderContainer = styled(Box)(({theme}) => ({
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
 }))
 
 const ButtonBar = styled(Box)(({theme}) => ({
@@ -36,7 +43,7 @@ const formatOutput = (output: string): string => {
     return outputArr.join("\n")
 }
 
-const OutputSection = ({outputStr}: { outputStr: string }) => {
+const OutputSection = ({outputStr, isGptResponseLoading}: { outputStr: string, isGptResponseLoading: boolean }) => {
     const output = formatOutput(outputStr)
 
     return (
@@ -48,7 +55,19 @@ const OutputSection = ({outputStr}: { outputStr: string }) => {
                 <UploadToGitlabBtn yamlOutput={output}/>
             </ButtonBar>
             <CodeContainer>
-                <pre>{output}</pre>
+                {isGptResponseLoading ?
+                    <LoaderContainer>
+                        <Box
+                            component="img"
+                            sx={{
+                                height: "40%",
+                                objectFit: "contain",
+                            }}
+                            alt="spinner GIF"
+                            src={CatGif}
+                        />
+                    </LoaderContainer> :
+                    <pre>{output}</pre>}
             </CodeContainer>
         </Layout>
     )

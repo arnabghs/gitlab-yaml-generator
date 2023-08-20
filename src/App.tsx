@@ -12,11 +12,12 @@ const AppContainer = styled(Box)(() => ({
 
 function App() {
     const [output, setOutput] = useState("")
+    const [isGptResponseLoading, setIsGptResponseLoading] = useState(false);
 
     return (
         <AppContainer>
-            <SpecificationSection setOutput={setOutput}/>
-            <OutputSection outputStr={output}/>
+            <SpecificationSection setOutput={setOutput} setIsGptResponseLoading={setIsGptResponseLoading}/>
+            <OutputSection outputStr={output} isGptResponseLoading={isGptResponseLoading}/>
         </AppContainer>
     );
 }

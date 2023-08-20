@@ -7,6 +7,7 @@ import {SingleOptionSelector} from "../shared/OptionsDropdown";
 import {SelectChangeEvent, styled, Typography} from "@mui/material";
 import {CustomTextField} from "../shared/InputForm";
 import {uploadToGitlab} from "../../api/gitlab";
+import CatGif from "../../images/loading-fast.gif";
 
 const StyledForm = styled(Box)(({theme}) => ({
     position: 'absolute' as 'absolute',
@@ -34,7 +35,7 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
     const [accessToken, setAccessToken] = useState("");
     const [branch, setBranch] = useState("");
     const [repoID, setRepoID] = useState("");
-
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -44,7 +45,8 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
     }
 
     const pushToGitlab = () => {
-        uploadToGitlab(uploadOption, repoID,accessToken, branch, yamlOutput)
+        setIsLoading(true)
+        uploadToGitlab(uploadOption, repoID, accessToken, branch, yamlOutput, setIsLoading, handleClose)
     }
 
     return (
@@ -52,26 +54,39 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
             <Button variant="outlined" onClick={handleOpen}>Upload to Gitlab</Button>
             <Modal open={open} onClose={handleClose}>
                 <StyledForm>
-                    <CustomTextField
-                        placeholder="Repo ID"
-                        value={repoID}
-                        onChange={(event) => setRepoID(event.target.value)}
-                    />
-                    <CustomTextField
-                        placeholder="Repo Access token"
-                        value={accessToken}
-                        onChange={(event) => setAccessToken(event.target.value)}
-                    />
-                    <CustomTextField
-                        placeholder="Branch name"
-                        value={branch}
-                        onChange={(event) => setBranch(event.target.value)}
-                    />
-                    <Typography variant={"caption"}>Make sure the branch already exists</Typography>
-                    <SingleOptionSelector selectedItem={uploadOption} onChange={selectUploadOption}
-                                          items={UploadOptions} label={"action"}/>
-                    <Button variant="contained" onClick={pushToGitlab}>Push</Button>
+                    {isLoading ? <Box
+                            component="img"
+                            sx={{
+                                height: "100%",
+                                objectFit: "contain",
+                            }}
+                            alt="spinner GIF"
+                            src={CatGif}
+                        /> :
+                        <>
+                            <CustomTextField
+                                placeholder="Repo ID"
+                                value={repoID}
+                                onChange={(event) => setRepoID(event.target.value)}
+                            />
+                            <CustomTextField
+                                placeholder="Repo Access token"
+                                value={accessToken}
+                                onChange={(event) => setAccessToken(event.target.value)}
+                            />
+                            <CustomTextField
+                                placeholder="Branch name"
+                                value={branch}
+                                onChange={(event) => setBranch(event.target.value)}
+                            />
+                            <Typography variant={"caption"}>Make sure the branch already exists</Typography>
+                            <SingleOptionSelector selectedItem={uploadOption} onChange={selectUploadOption}
+                                                  items={UploadOptions} label={"action"}/>
+                            <Button variant="contained" onClick={pushToGitlab}>Push</Button>
+                        </>
+                    }
                 </StyledForm>
+
             </Modal>
         </div>
     );
