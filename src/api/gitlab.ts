@@ -32,7 +32,37 @@ const uploadToGitlab = (uploadOption: string, repoID: string, accessToken: strin
             handleClose()
             console.log("Push successful !")
         }
-    }).catch((err: AxiosError) => alert(err.code))
+    }).catch((err: AxiosError) => {
+        setIsLoading(false)
+        alert(err.code)
+    })
 }
 
-export {uploadToGitlab}
+const validateGeneratedYAML = (yamlOutput: string, repoID: string, accessToken: string,
+                               setIsValidationInProgress: (b: boolean) => void,
+                               setIsValidYaml: (b: boolean,) => void,
+                               setValidationMsg: (m: string) => void) => {
+    let response = axios({
+        method: "post",
+        url: `https://gitlab.com/api/v4/projects/${repoID}/ci/lint`,
+        data: {
+            "content": yamlOutput,
+        },
+        headers: {'Content-Type': 'application/json', 'PRIVATE-TOKEN': accessToken},
+    });
+
+    response.then((res: AxiosResponse) => {
+        setIsValidationInProgress(false)
+        if (res.data.valid) {
+            setIsValidYaml(true)
+            setValidationMsg("Validation successful :)")
+            return
+        }
+        setValidationMsg("Validation unsuccessful :(")
+    }).catch((err: AxiosError) => {
+        setIsValidationInProgress(false)
+        alert(err.code)
+    })
+}
+
+export {uploadToGitlab, validateGeneratedYAML}

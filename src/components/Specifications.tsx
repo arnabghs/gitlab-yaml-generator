@@ -55,7 +55,6 @@ const TemplateInputLayout = styled(Box)(() => ({
     textAlign: "center"
 }))
 
-
 const TemplateInputSection = ({setUserInput}: any) => {
     const theme = useTheme()
     const [inputValue, setInputValue] = useState('');
@@ -82,7 +81,7 @@ const TemplateInputSection = ({setUserInput}: any) => {
                     value={inputValue}
                     onChange={handleInputChange}
                 />
-                <Button type="submit" variant="contained" sx={{marginTop: theme.spacing(2)}}>
+                <Button type="submit" variant="contained" sx={{marginTop: theme.spacing(2), backgroundColor: "green"}}>
                     Submit YAML
                 </Button>
             </FormContainer>
@@ -155,7 +154,8 @@ const StageOptions = ({setUserInput}: any, selectedTs: TechStackType) => {
             {getStageByName(stageState, "static-checks").selected &&
                 <StaticCheckOptions setStaticCheckParams={setStaticCheckParams}/>}
             <SubmitBtnContainer>
-                <Button variant="contained" onClick={setEnabledStages}> Submit</Button>
+                <Button variant="contained" onClick={setEnabledStages}
+                        sx={{backgroundColor: "green"}}> Submit</Button>
             </SubmitBtnContainer>
         </StageOptionsLayout>
     )

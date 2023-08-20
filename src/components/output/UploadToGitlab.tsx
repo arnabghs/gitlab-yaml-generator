@@ -4,9 +4,9 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import {SingleOptionSelector} from "../shared/OptionsDropdown";
-import {SelectChangeEvent, styled, Typography} from "@mui/material";
+import {CircularProgress, SelectChangeEvent, styled, Typography} from "@mui/material";
 import {CustomTextField} from "../shared/InputForm";
-import {uploadToGitlab} from "../../api/gitlab";
+import {uploadToGitlab, validateGeneratedYAML} from "../../api/gitlab";
 import CatGif from "../../images/loading-fast.gif";
 
 const StyledForm = styled(Box)(({theme}) => ({
@@ -15,7 +15,7 @@ const StyledForm = styled(Box)(({theme}) => ({
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: "25%",
-    height: "40%",
+    height: "50%",
     backgroundColor: "white",
     border: '1px solid #000',
 
@@ -35,7 +35,11 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
     const [accessToken, setAccessToken] = useState("");
     const [branch, setBranch] = useState("");
     const [repoID, setRepoID] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const [isPushingInProgress, setIsPushingInProgress] = useState(false);
+    const [isValidationInProgress, setIsValidationInProgress] = useState(false);
+    const [isValidYaml, setIsValidYaml] = useState(false);
+    const [validationMsg, setValidationMsg] = useState("");
+
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -45,8 +49,13 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
     }
 
     const pushToGitlab = () => {
-        setIsLoading(true)
-        uploadToGitlab(uploadOption, repoID, accessToken, branch, yamlOutput, setIsLoading, handleClose)
+        setIsPushingInProgress(true)
+        uploadToGitlab(uploadOption, repoID, accessToken, branch, yamlOutput, setIsPushingInProgress, handleClose)
+    }
+
+    const validateYAML = () => {
+        setIsValidationInProgress(true)
+        validateGeneratedYAML(yamlOutput, repoID, accessToken, setIsValidationInProgress, setIsValidYaml, setValidationMsg)
     }
 
     return (
@@ -54,7 +63,7 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
             <Button variant="outlined" onClick={handleOpen}>Upload to Gitlab</Button>
             <Modal open={open} onClose={handleClose}>
                 <StyledForm>
-                    {isLoading ? <Box
+                    {isPushingInProgress ? <Box
                             component="img"
                             sx={{
                                 height: "100%",
@@ -74,6 +83,11 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
                                 value={accessToken}
                                 onChange={(event) => setAccessToken(event.target.value)}
                             />
+                            <Button variant="contained" onClick={validateYAML} sx={{backgroundColor: "#0d9465"}}>
+                                Validate YAML
+                            </Button>
+                            {isValidationInProgress && <Box textAlign={"center"}><CircularProgress/></Box>}
+                            {validationMsg && <Typography>{validationMsg}</Typography>}
                             <CustomTextField
                                 placeholder="Branch name"
                                 value={branch}
@@ -82,7 +96,7 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
                             <Typography variant={"caption"}>Make sure the branch already exists</Typography>
                             <SingleOptionSelector selectedItem={uploadOption} onChange={selectUploadOption}
                                                   items={UploadOptions} label={"action"}/>
-                            <Button variant="contained" onClick={pushToGitlab}>Push</Button>
+                            <Button variant="contained" disabled={!isValidYaml} onClick={pushToGitlab}>Push</Button>
                         </>
                     }
                 </StyledForm>
