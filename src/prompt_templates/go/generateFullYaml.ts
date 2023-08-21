@@ -1,12 +1,30 @@
 import {BuildParam, Stage, StaticCheckJobName} from "../../data/data";
 
-const VariablesPrompt = `
+const VariablesPrompt = (stages: string[]): string => {
+    let prompt = `
     Use variables:
-     - 'GO_DOCKER_VERSION' to determine the version of golang docker image
-     - 'GOLINT_IMAGE' to determine the docker image for running 'golangci-lint'. Use the latest image available
-     - 'FINAL_IMAGETAG' to determine the final tag of the image before it is pushed. Use value 'arnabghs/$APP_NAME-\${CI_COMMIT_SHORT_SHA}'
-     - 'DAST_ENDPOINT' to be used in 'zap-baseline-dast' job. Use value "https://apidev.my-app.com"
-`
+        `
+
+    if (stages.includes("build")) {
+        prompt = prompt + ` - 'GOLANG_IMAGE' to determine the image to use in 'build' and 'test' job. Use value "golang:1.16"
+         - 'GO_SERVICE' to determine the path of go build output. Use value "output"
+        `
+    }
+    if (stages.includes("static-checks")) {
+        prompt = prompt + ` - 'GOLINT_IMAGE' to determine the docker image for running 'golangci-lint'. Use the latest image available
+        `
+    }
+    if (stages.includes("publish")) {
+        prompt = prompt + ` - 'FINAL_IMAGETAG' to determine the final tag of the image before it is pushed. Use value 'arnabghs/$APP_NAME-\${CI_COMMIT_SHORT_SHA}'
+        `
+    }
+    if (stages.includes("DAST-scan")) {
+        prompt = prompt + ` - 'DAST_ENDPOINT' to be used in 'zap-baseline-dast' job. Use value "https://apidev.my-app.com"
+        `
+    }
+
+    return prompt
+}
 
 const staticCheckPrompt = (jobs?: StaticCheckJobName[]): string => {
     if (!Array.isArray(jobs)) return ""
@@ -27,13 +45,13 @@ const buildPrompt = (buildParam?: BuildParam): string => {
     if (!buildParam) return ""
     return `
     'build' stage will contain following job names:
-      - 'compile': this job will build binary from 'cmd/server/main.go' file after setting env variables to build the binary for '${buildParam.GOOS}' operating system and '${buildParam.GOARCH}' architecture. It will output the binary in '$GO_SERVICE' variable path and pass it along in artefacts path.
+      - 'compile': this job will use $GOLANG_IMAGE to build binary from 'main.go' file after setting env variables to build the binary for '${buildParam.GOOS}' operating system and '${buildParam.GOARCH}' architecture. It will output the binary in '$GO_SERVICE' variable path and pass it along in artefacts path.
 `
 }
 
 const TestPrompt = `
     'test' stage will contain following job names:
-      - 'unit-test': this job will run go test on all repository with '!integration' tags
+      - 'unit-test': this job will use $GOLANG_IMAGE to run all tests in the repository
 `
 
 const PackagePrompt = `
@@ -53,12 +71,17 @@ const CloudDeployPrompt = `
 const deployPrompt = (envs?: string[]): string => {
     if (!Array.isArray(envs)) return ""
 
-    return envs.reduce((prevInstruction, env) => {
+    let instructions = envs.reduce((prevInstruction, env) => {
         return prevInstruction + `  - 'deploy-${env}': this job will extend '.cloud-deploy'. Use environment name: '${env}'
         `
     }, `'deploy' stage will contain following job names:
         `)
+
+    instructions = `${instructions}  Note: Do not create a job with only 'deploy' name.
+    `
+    return instructions
 }
+
 const DastScanPrompt = `
     'DAST-scan' stage will contain following job names:
       - 'zap-baseline-dast': this job will run zap baseline scan on '$DAST_ENDPOINT' variable url and pass the generated report in artefacts path.
@@ -113,7 +136,7 @@ const COMPLETE_YAML_PROMPT = (stages: Stage[], buildParams?: BuildParam, deployP
     
     1 - ${IncludeStagesPrompt(stages)}
     
-    2 - ${VariablesPrompt}
+    2 - ${VariablesPrompt(stages)}
     
     ${stagesToInclude(stages, buildParams, deployParams, staticCheckParams)}
     

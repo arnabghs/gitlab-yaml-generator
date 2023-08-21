@@ -10,8 +10,8 @@ Write a .gitlab-ci.yml file for a golang application by performing the following
 
   1 - Include 'sample-gitlab-ci.yml' file at top of new '.gitlab-ci.yml' file with ref 'main' and project 'my-project'
   2 - Find out all the variables used in 'sample-gitlab-ci.yml' file, remove the ones used in '.cloud-deploy' job and list the rest of them down under global variables section
-  3 - create seperate variable sections for each deploy jobs with exact job name
-  4 - Find out all the variables used in '.cloud-deploy' job and list them down in deploy jobs variable section
+  3 - create seperate variable sections for each deploy jobs with exact job name as mentioned in 'sample-gitlab-ci.yml' template file
+  4 - Find out all the variables used in '.cloud-deploy' job and list them down in respective deploy jobs variable section
   
   Note: Do not add any job definition(including deploy jobs) and 'stages' section in the new 'sample-gitlab-ci.yml' file. Always use the exact variable name.
   \`\`\`
