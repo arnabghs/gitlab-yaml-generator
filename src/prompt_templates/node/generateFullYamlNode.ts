@@ -1,0 +1,133 @@
+import {BuildParam, Stage, StaticCheckJobName} from "../../data/data";
+
+const templatesIncludePrompt = (staticCheckParams?: StaticCheckJobName[]): string => {
+
+  if(staticCheckParams?.includes("gemnasium-dependency_scanning")) return `
+  include templates: 
+   - Make use of \`include\` keyword to include 'Security/Dependency-Scanning.gitlab-ci.yml' gitlab template file at top of new '.gitlab-ci.yml' file.
+`
+return ``
+}  
+
+const VariablesPrompt = `
+    Use variables:
+     - 'node:latest' to determine the version of node JS image
+     - 'FINAL_IMAGETAG' to determine the final tag of the image before it is pushed. Use value '$TARGET_CONTAINER_REGISTRY/$APP_NAME-\${CI_COMMIT_SHORT_SHA}'
+     - 'DAST_ENDPOINT' to be used in 'zap-baseline-dast' job. Use value "https://apidev.my-app.com"
+`
+
+const staticCheckPrompt = (jobs?: StaticCheckJobName[]): string => {
+    if (!Array.isArray(jobs)) return ""
+
+    let jobPrompt: { [key: string]: string } = {
+        "lint": "this job will run linter for the node JS repository using 'npm run lint' command with '--format=json > lint-report.json' for Output format to be 'json'. Install dependencies by 'npm install' command before running lint. Use the docker image in '$NODE_IMAGE' variable. Pass the output 'lint-report.json' in artefacts as gitlab 'codequality' reports.",
+        "gemnasium-dependency_scanning": "this job will run dependency check. Pass the job report in artefacts as 'dependency_scanning' reports. Do not add any definition section in this job other than 'stage' and 'artefacts'.",
+        "secret_detection": "this job will run secret scanning. Pass the job report in artefacts as 'secret_detection' reports. Do not add any definition section in this job other than 'stage' and 'artefacts'."
+    }
+
+    return jobs.reduce((prevInstruction, job) => {
+        return prevInstruction + `  - '${job}': ${jobPrompt[job]}
+        `
+    }, `'static-checks' stage will contain following job names:
+        `)
+}
+
+const buildPrompt = `
+    'build' stage will contain following job names:
+      - 'compile': this job will build binary using 'npm run build' command. Install dependencies by 'npm install' command before building binary. It will output the binary in 'dist/' path and pass it along in artefacts path.
+`
+
+const TestPrompt = `
+    'test' stage will contain following job names:
+      - 'unit-test': this job will run 'npm run test' command with '--coverage --reporter=json > coverage-report.json' for coverage reporter to be 'json'. Install dependencies by 'npm install' command before running 'npm run test'. Use the docker image in '$NODE_IMAGE' variable. Pass the output 'coverage-report.json' in artefacts as gitlab 'codequality' reports.
+`
+
+const PackagePrompt = `
+    'package' stage will contain following job names:
+      - 'docker-build': this job will build a docker image from '$DOCKERFILE_PATH' variable with tag '$APP_NAME-\${CI_COMMIT_SHORT_SHA}' using 'latest' tag of 'docker' image. Then it will create a tar of the generated image under the output path '$DOCKER_IMAGE_TARFILE' and pass it along in artefacts path.
+`
+
+const PublishPrompt = `
+    'publish' stage will contain following job names:
+     - 'publish-image': this job loads the docker image from '$DOCKER_IMAGE_TARFILE' input using 'latest' tag of 'docker' image.Then the image will be tagged as '$FINAL_IMAGETAG' and pushed to dockerhub.
+`
+
+const CloudDeployPrompt = `
+    create a gitlab job named '.cloud-deploy' without associating it any stage. It will use 'awscli:latest' image to deploy the image into AWS ECS. First it is going register-task-definition with cli input json '$TASK_DEFINITION_FILE' and aws profile '$AWS_PROFILE' variable into '$AWS_DEFAULT_REGION' region. Next, it will update-service with task-definition '$TASK_DEFINITION_NAME', service-name '$SERVICE_NAME' and cluster '$CLUSTER_NAME' in '$AWS_DEFAULT_REGION' region.
+`
+
+const deployPrompt = (envs?: string[]): string => {
+    if (!Array.isArray(envs)) return ""
+
+    return envs.reduce((prevInstruction, env) => {
+        return prevInstruction + `  - 'deploy-${env}': this job will extend '.cloud-deploy'. Use environment name: '${env}'. Use variables:
+        AWS_PROFILE, AWS_DEFAULT_REGION, TASK_DEFINITION_FILE, TASK_DEFINITION_NAME, SERVICE_NAME, CLUSTER_NAME
+        `
+    }, `'deploy' stage will contain following job names:
+        `)
+}
+const DastScanPrompt = `
+    'DAST-scan' stage will contain following job names:
+      - 'zap-baseline-dast': this job will run zap baseline scan on '$DAST_ENDPOINT' variable url and pass the generated report in artefacts path.
+`
+
+const IncludeStagesPrompt = (stages: Stage[]): string => {
+    let promptString = "Include"
+    stages.forEach((stage, index) => {
+        if (index === (stages.length - 1)) {
+            promptString = promptString + ` and '${stage}' stage`
+        } else {
+            promptString = promptString + ` '${stage}',`
+        }
+    })
+
+    return promptString
+}
+
+const stagesToInclude = (stages: Stage[], deployParams?: string[], staticCheckParams?: StaticCheckJobName[]): string => {
+    const stagePromptMap: { [key: string]: string } = {
+        "static-checks": staticCheckPrompt(staticCheckParams),
+        "build": buildPrompt,
+        "test": TestPrompt,
+        "package": PackagePrompt,
+        "publish": PublishPrompt,
+        "CloudDeploy": CloudDeployPrompt,
+        "deploy": deployPrompt(deployParams),
+        "DAST-scan": DastScanPrompt
+    }
+
+    const promptKeys: string[] = [...stages]
+
+    if (promptKeys.includes("deploy")) {
+        let index = promptKeys.findIndex((element) => element === "deploy")
+        promptKeys.splice(index, 0, "CloudDeploy")
+    }
+
+    let actions = ""
+    promptKeys.forEach((promptKey, index) => {
+        actions = actions + `${index + 3} - ${stagePromptMap[promptKey]}
+    `
+    })
+
+    return actions
+}
+
+const COMPLETE_YAML_PROMPT_NODE = (stages: Stage[], deployParams?: string[], staticCheckParams?: StaticCheckJobName[]): string => `
+    I want you to act as an Devops consultant. I will provide some specific information about different jobs and stages of a gitlab pipeline and it will be your job to generate a .gitlab-ci.yml file based on the requirements. You should use your computer science, CI/CD pipeline, node JS, docker, AWS and gitlab knowledge to solve my problem.
+  I want you to reply with the .gitlab-ci.yml file only, do not write any explanations. My first request is delimited by triple backticks(\`\`\`) -
+  \`\`\`
+  Write a .gitlab-ci.yml file for a node JS application by performing the following actions:
+
+    1 - ${templatesIncludePrompt(staticCheckParams)}
+    
+    2 - ${IncludeStagesPrompt(stages)}
+    
+    3 - ${VariablesPrompt}
+    
+    ${stagesToInclude(stages, deployParams, staticCheckParams)}
+    
+  Note: Map the job names attentively with the stages. Don't create any template unless specifically instructed, define the jobs directly.
+  \`\`\`
+`
+
+export {COMPLETE_YAML_PROMPT_NODE}
