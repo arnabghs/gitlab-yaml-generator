@@ -180,7 +180,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
     const [fromScratch, setFromScratch] = useState(false)
     const [fromTemplate, setFromTemplate] = useState(false)
     const [userInput, setUserInput] = useState<UserInput>()
-    const [selectedTs, setSelectedTs] = useState<TechStackType | null>(null); 
+    const [selectedTs, setSelectedTs] = useState<TechStackType>(); 
 
     useEffect(() => {
         let templateYAML = userInput?.templateYAML
@@ -239,7 +239,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
             return
         }
 
-    }, [userInput, setOutput])
+    }, [userInput, setOutput, selectedTs])
 
     const generateCompleteYAML = () => {
         setFromScratch(true)
@@ -259,7 +259,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         <Layout>
             <TechStack>
                 {TechStackButtons.map((tsBtn, index) => {
-                    return <Button variant="contained" disabled={selectedTs !== null && selectedTs !== tsBtn.label} key={index} onClick={() => handleTechStackButtonClick(tsBtn.label)}>{tsBtn.label}</Button>
+                    return <Button variant={ (selectedTs === tsBtn.label) ? "contained" : "outlined"} key={index} onClick={() => handleTechStackButtonClick(tsBtn.label)}>{tsBtn.label}</Button>
                 })}
             </TechStack>
             <TypeOfGeneration generateCompleteYAML={generateCompleteYAML}
