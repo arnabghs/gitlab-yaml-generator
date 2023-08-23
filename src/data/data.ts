@@ -21,14 +21,13 @@ export type TechStackType = "GO" | "node" | "php" | "kotlin"
 
 export type TechBtnProps = {
     label: TechStackType
-    disabled: boolean
 }
 
 export const TechStackButtons: TechBtnProps[] = [
-    {label: "GO", disabled: false},
-    {label: "node", disabled: false},
-    {label: "php", disabled: true},
-    {label: "kotlin", disabled: true}
+    {label: "GO"},
+    {label: "node"},
+    {label: "php"},
+    {label: "kotlin"}
 ]
 
 export const Stages: StageProps[] = [
