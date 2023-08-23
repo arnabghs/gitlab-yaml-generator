@@ -1,12 +1,15 @@
 import {Box, Button, styled, TextField, useTheme} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {COMPLETE_YAML_PROMPT} from "../prompt_templates/go/generateFullYaml";
+import {COMPLETE_YAML_PROMPT_NODE} from "../prompt_templates/node/generateFullYamlNode";
 import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFromTemplate";
+import {YAML_FROM_TEMPLATE_PROMPT_NODE} from "../prompt_templates/node/generateYamlFromTemplateNode";
 import {getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
 import {generateResponse} from "../api/openai";
-import {BuildParam, StageProps, Stages, TechStackButtons, UserInput} from "../data/data";
+import {generateResponseWithInContextLearn} from "../api/openaiInContextLearn";
+import {BuildParam, StageProps, Stages, TechStackButtons, UserInput, TechStackType} from "../data/data";
 import {StaticCheckOptions} from "./staticChecks/StaticCheck";
 
 const Layout = styled(Box)(() => ({
@@ -128,7 +131,7 @@ const StageContainer = styled(Box)(({theme}) => ({
 }))
 
 
-const StageOptions = ({setUserInput}: any) => {
+const StageOptions = ({setUserInput}: any, selectedTs: TechStackType) => {
     const [stageState, setStageState] = useState(Stages)
     const [buildParams, setBuildParams] = useState<BuildParam>()
     const [deployParams, setDeployParams] = useState([])
@@ -161,7 +164,7 @@ const StageOptions = ({setUserInput}: any) => {
                     }} key={index}>{stage.name}</Button>
                 })}
             </StageContainer>
-            {getStageByName(stageState, "build").selected && <BuildOptions setBuildParams={setBuildParams}/>}
+            {(getStageByName(stageState, "build").selected && selectedTs === "GO") ? <BuildOptions setBuildParams={setBuildParams}/> : ""}
             {getStageByName(stageState, "deploy").selected && <DeployOptions setDeployParams={setDeployParams}/>}
             {getStageByName(stageState, "static-checks").selected &&
                 <StaticCheckOptions setStaticCheckParams={setStaticCheckParams}/>}
@@ -177,6 +180,7 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
     const [fromScratch, setFromScratch] = useState(false)
     const [fromTemplate, setFromTemplate] = useState(false)
     const [userInput, setUserInput] = useState<UserInput>()
+    const [selectedTs, setSelectedTs] = useState<TechStackType>(); 
 
     useEffect(() => {
         let templateYAML = userInput?.templateYAML
@@ -196,26 +200,46 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         }
 
         if (templateYAML && !stages) {
-            let promptInput = YAML_FROM_TEMPLATE_PROMPT(templateYAML)
-            generateResponse(promptInput)
+            if(selectedTs === "node" ){
+                generateResponseWithInContextLearn(YAML_FROM_TEMPLATE_PROMPT_NODE(templateYAML))
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
                 })
-            return
+            } else if (selectedTs === "GO") {
+                let promptInput = YAML_FROM_TEMPLATE_PROMPT(templateYAML)
+                generateResponse(promptInput)
+                .then(response => {
+                    const responseText = response?.choices?.shift()?.message?.content;
+                    setOutput(responseText)
+                })
+            } else {
+                console.log("selectedTs is neither node nor GO");
+            }  
         }
 
         if (!templateYAML && stages) {
-            let promptInput = COMPLETE_YAML_PROMPT(stages, buildParams, deployParams, staticCheckParams)
-            generateResponse(promptInput)
+            if(selectedTs === "GO") {
+                let promptInput = COMPLETE_YAML_PROMPT(stages, buildParams, deployParams, staticCheckParams)
+                generateResponse(promptInput)
                 .then(response => {
                     const responseText = response?.choices?.shift()?.message?.content;
                     setOutput(responseText)
                 })
+            } else if(selectedTs === "node") {
+                let promptInput = COMPLETE_YAML_PROMPT_NODE(stages, deployParams, staticCheckParams)
+                generateResponse(promptInput)
+                .then(response => {
+                    const responseText = response?.choices?.shift()?.message?.content;
+                    setOutput(responseText)
+                })
+            } else {
+                console.log("selectedTs is neither node nor GO")
+            }
             return
         }
 
-    }, [userInput, setOutput])
+    }, [userInput, setOutput, selectedTs])
 
     const generateCompleteYAML = () => {
         setFromScratch(true)
@@ -227,16 +251,20 @@ const SpecificationSection = ({setOutput}: { setOutput: (result: any) => void })
         setFromTemplate(true)
     }
 
+    const handleTechStackButtonClick = (tsSelected: TechStackType) => {
+        setSelectedTs(tsSelected)
+    };
+
     return (
         <Layout>
             <TechStack>
                 {TechStackButtons.map((tsBtn, index) => {
-                    return <Button variant="contained" disabled={tsBtn.disabled} key={index}>{tsBtn.label}</Button>
+                    return <Button variant={ (selectedTs === tsBtn.label) ? "contained" : "outlined"} key={index} onClick={() => handleTechStackButtonClick(tsBtn.label)}>{tsBtn.label}</Button>
                 })}
             </TechStack>
             <TypeOfGeneration generateCompleteYAML={generateCompleteYAML}
                               generateYAMLFromTemplate={generateYAMLFromTemplate}/>
-            {fromScratch && <StageOptions setUserInput={setUserInput}/>}
+            {fromScratch && <StageOptions setUserInput={setUserInput} selectedTs={selectedTs}/>}
             {fromTemplate && <TemplateInputSection setUserInput={setUserInput}/>}
         </Layout>
     )
