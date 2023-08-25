@@ -1,7 +1,8 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {Box, styled} from "@mui/material";
 import {SpecificationSection} from "./components/Specifications";
 import {OutputSection} from "./components/Output";
+import {AppProvider} from "./store/AppProvider";
 
 const AppContainer = styled(Box)(() => ({
     height: "100vh",
@@ -11,13 +12,12 @@ const AppContainer = styled(Box)(() => ({
 
 
 function App() {
-    const [output, setOutput] = useState("")
-    const [isGptResponseLoading, setIsGptResponseLoading] = useState(false);
-
     return (
         <AppContainer>
-            <SpecificationSection setOutput={setOutput} setIsGptResponseLoading={setIsGptResponseLoading}/>
-            <OutputSection outputStr={output} isGptResponseLoading={isGptResponseLoading}/>
+            <AppProvider>
+                <SpecificationSection/>
+                <OutputSection/>
+            </AppProvider>
         </AppContainer>
     );
 }

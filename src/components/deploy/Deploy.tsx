@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {Dispatch, SetStateAction, useEffect} from "react";
 import {MultiOptionSelector, OptionsDropdown} from "../shared/OptionsDropdown";
 import {SelectChangeEvent} from "@mui/material";
 
@@ -11,7 +11,7 @@ const Envs = [
     'PROD'
 ];
 
-const DeployOptions = ({setDeployParams}: any) => {
+const DeployOptions = ({setDeployParams}: { setDeployParams : Dispatch<SetStateAction<string[]>> }) => {
     const [envs, setEnvs] = React.useState<string[]>([]);
     const handleChange = (event: SelectChangeEvent<typeof envs>,) => {
         const {target: {value}} = event;

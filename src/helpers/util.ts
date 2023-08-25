@@ -5,12 +5,16 @@ import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFrom
 import {generateResponse} from "../api/openai";
 import {COMPLETE_YAML_PROMPT} from "../prompt_templates/go/generateFullYaml";
 import {COMPLETE_YAML_PROMPT_NODE} from "../prompt_templates/node/generateFullYamlNode";
+import {Dispatch, SetStateAction} from "react";
 
 const getStageByName = (stages: StageProps[], name: Stage): StageProps => {
     return stages.filter(st => st.name === name)[0]
 }
 
-const generateTemplateResponse = (selectedTs: TechStackType, templateYAML: string, setOutput: any, setIsGptResponseLoading: any) => {
+const generateTemplateResponse = (selectedTs: TechStackType,
+                                  templateYAML: string,
+                                  setOutput: Dispatch<SetStateAction<string>>,
+                                  setIsGptResponseLoading: Dispatch<SetStateAction<boolean>>) => {
     if (selectedTs === "node") {
         generateResponseWithInContextLearn(YAML_FROM_TEMPLATE_PROMPT_NODE(templateYAML))
             .then(response => {
@@ -31,7 +35,13 @@ const generateTemplateResponse = (selectedTs: TechStackType, templateYAML: strin
     }
 }
 
-const generateCompleteResponse = (selectedTs: TechStackType, stages: Stage[], setOutput: any, setIsGptResponseLoading: any, buildParams?: BuildParam, deployParams?: string[], staticCheckParams?: StaticCheckJobName[]) => {
+const generateCompleteResponse = (selectedTs: TechStackType,
+                                  stages: Stage[],
+                                  setOutput: Dispatch<SetStateAction<string>>,
+                                  setIsGptResponseLoading: Dispatch<SetStateAction<boolean>>,
+                                  buildParams?: BuildParam,
+                                  deployParams?: string[],
+                                  staticCheckParams?: StaticCheckJobName[]) => {
     if (selectedTs === "GO") {
         let promptInput = COMPLETE_YAML_PROMPT(stages, buildParams, deployParams, staticCheckParams)
         generateResponse(promptInput)

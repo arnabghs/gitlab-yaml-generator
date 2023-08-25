@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {Dispatch, SetStateAction} from "react";
 import {StaticCheckJobName} from "../../data/data";
 import {MultiOptionSelector, OptionsDropdown} from "../shared/OptionsDropdown";
 import {SelectChangeEvent} from "@mui/material";
@@ -8,23 +8,23 @@ const Jobs: StaticCheckJobName[] = [
     'gemnasium-dependency_scanning'
 ];
 
-const StaticCheckOptions = ({setStaticCheckParams}: any) => {
-    const [jobs, setJobs] = React.useState<string[]>([])
+const StaticCheckOptions = ({staticCheckParams, setStaticCheckParams}:
+                                {
+                                    staticCheckParams: StaticCheckJobName[],
+                                    setStaticCheckParams: Dispatch<SetStateAction<StaticCheckJobName[]>>
+                                }) => {
 
-    const handleChange = (event: SelectChangeEvent<typeof jobs>,) => {
-        const {target: {value}} = event;
-        setJobs(
-            typeof value === 'string' ? value.split(',') : value,
-        );
+    const handleChange = (event: SelectChangeEvent<string[]>) => {
+        event.preventDefault()
+
+        let v = typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value
+        setStaticCheckParams(v as StaticCheckJobName[])
     };
-
-    useEffect(() => {
-        setStaticCheckParams([...jobs])
-    }, [jobs, setStaticCheckParams])
 
     return (
         <OptionsDropdown stageName={"Static-Check"}>
-            <MultiOptionSelector availableOptions={Jobs} selectedOptions={jobs} handleChange={handleChange} label={"Job"}/>
+            <MultiOptionSelector availableOptions={Jobs} selectedOptions={staticCheckParams} handleChange={handleChange}
+                                 label={"Job"}/>
         </OptionsDropdown>
     )
 }

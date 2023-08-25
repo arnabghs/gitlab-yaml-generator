@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from "react";
+import React, {Dispatch, SetStateAction, useContext, useEffect, useState} from "react";
 import {SelectChangeEvent} from "@mui/material";
 import {OptionsDropdown, SingleOptionSelector} from "../shared/OptionsDropdown";
-import {TechStackType} from "../../data/data";
+import {AppContext} from "../../store/AppProvider";
+import {BuildParam} from "../../data/data";
 
-const GoBuildOptions = ({setBuildParams}: any) => {
+const GoBuildOptions = ({setBuildParams}: { setBuildParams: Dispatch<SetStateAction<BuildParam | undefined>> }) => {
     const GOOSOptions = ["darwin", "linux", "windows"]
     const GOARCHOptions = ["amd64", "arm64"]
 
@@ -30,13 +31,14 @@ const GoBuildOptions = ({setBuildParams}: any) => {
     )
 }
 
-const BuildOptions = ({selectedTs, setBuildParams}: { selectedTs: TechStackType | undefined, setBuildParams: any}) => {
+const BuildOptions = ({setBuildParams}: { setBuildParams: Dispatch<SetStateAction<BuildParam | undefined>> }) => {
+    const ctx = useContext(AppContext)
 
     return (
         <>
-            {(selectedTs && selectedTs === "GO") ? <GoBuildOptions setBuildParams={setBuildParams}/> : <></>}
+            {(ctx.selectedTs === "GO") && <GoBuildOptions setBuildParams={setBuildParams}/>}
         </>
     )
 }
 
-export { BuildOptions}
+export {BuildOptions}

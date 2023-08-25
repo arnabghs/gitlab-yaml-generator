@@ -1,11 +1,12 @@
 import {Box, Button, styled, useTheme} from "@mui/material";
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import {generateCompleteResponse, generateTemplateResponse, getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
 import {StaticCheckOptions} from "./staticChecks/StaticCheck";
-import {BuildParam, StageProps, Stages, TechStackButtons, TechStackType} from "../data/data";
+import {BuildParam, StageProps, Stages, StaticCheckJobName, TechStackButtons} from "../data/data";
 import {CustomTextField, FormContainer} from "./shared/InputForm";
+import {AppContext} from "../store/AppProvider";
 
 const Layout = styled(Box)(() => ({
     height: "100%",
@@ -49,13 +50,10 @@ const TemplateInputLayout = styled(Box)(() => ({
     textAlign: "center"
 }))
 
-const TemplateInputSection = ({
-                                  selectedTs,
-                                  setOutput,
-                                  setIsGptResponseLoading
-                              }: { selectedTs: TechStackType, setOutput: any, setIsGptResponseLoading: any }) => {
+const TemplateInputSection = () => {
     const theme = useTheme()
     const [inputValue, setInputValue] = useState('');
+    const ctx = useContext(AppContext)
 
     const handleInputChange = (event: any) => {
         setInputValue(event.target.value);
@@ -63,10 +61,9 @@ const TemplateInputSection = ({
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
-        // setUserInput({templateYAML: inputValue})
 
-        setIsGptResponseLoading(true)
-        generateTemplateResponse(selectedTs, inputValue, setOutput, setIsGptResponseLoading)
+        ctx.setIsGptResponseLoading(true)
+        generateTemplateResponse(ctx.selectedTs, inputValue, ctx.setOutput, ctx.setIsGptResponseLoading)
     };
     return (
         <TemplateInputLayout>
@@ -117,21 +114,18 @@ const StageContainer = styled(Box)(({theme}) => ({
 }))
 
 
-const StageOptions = ({
-                          selectedTs,
-                          setOutput,
-                          setIsGptResponseLoading,
-                      }: { selectedTs: TechStackType, setOutput: any, setIsGptResponseLoading: any }) => {
+const StageOptions = () => {
     const [stageState, setStageState] = useState(Stages)
     const [buildParams, setBuildParams] = useState<BuildParam>()
-    const [deployParams, setDeployParams] = useState([])
-    const [staticCheckParams, setStaticCheckParams] = useState([])
+    const [deployParams, setDeployParams] = useState<string[]>([])
+    const [staticCheckParams, setStaticCheckParams] = useState<StaticCheckJobName[]>([])
+    const ctx = useContext(AppContext)
 
     const setEnabledStages = () => {
-        setIsGptResponseLoading(true)
+        ctx.setIsGptResponseLoading(true)
 
         const enabledStages = stageState.filter(st => st.selected).map(st => st.name)
-        generateCompleteResponse(selectedTs, enabledStages, setOutput, setIsGptResponseLoading, buildParams, deployParams, staticCheckParams)
+        generateCompleteResponse(ctx.selectedTs, enabledStages, ctx.setOutput, ctx.setIsGptResponseLoading, buildParams, deployParams, staticCheckParams)
     }
 
     const updateStageState = (stage: StageProps) => {
@@ -151,28 +145,23 @@ const StageOptions = ({
                     }} key={index}>{stage.name}</Button>
                 })}
             </StageContainer>
-            {(getStageByName(stageState, "build").selected) &&
-                <BuildOptions selectedTs={selectedTs} setBuildParams={setBuildParams}/>}
+            {(getStageByName(stageState, "build").selected) && <BuildOptions setBuildParams={setBuildParams}/>}
             {getStageByName(stageState, "deploy").selected && <DeployOptions setDeployParams={setDeployParams}/>}
             {getStageByName(stageState, "static-checks").selected &&
-                <StaticCheckOptions setStaticCheckParams={setStaticCheckParams}/>}
+                <StaticCheckOptions staticCheckParams={staticCheckParams} setStaticCheckParams={setStaticCheckParams}/>}
             <SubmitBtnContainer>
-                <Button variant="contained" onClick={setEnabledStages}
-                        sx={{backgroundColor: "green"}}> Submit</Button>
+                <Button variant="contained" onClick={setEnabledStages} sx={{backgroundColor: "green"}}> Submit</Button>
             </SubmitBtnContainer>
         </StageOptionsLayout>
     )
 }
 
 
-const SpecificationSection = ({setOutput, setIsGptResponseLoading}:
-                                  {
-                                      setOutput: (result: string) => void,
-                                      setIsGptResponseLoading: (b: boolean) => void
-                                  }) => {
+const SpecificationSection = () => {
     const [fromScratch, setFromScratch] = useState(false)
     const [fromTemplate, setFromTemplate] = useState(false)
-    const [selectedTs, setSelectedTs] = useState<TechStackType>("none");
+    const ctx = useContext(AppContext)
+
 
     const generateCompleteYAML = () => {
         setFromScratch(true)
@@ -188,16 +177,14 @@ const SpecificationSection = ({setOutput, setIsGptResponseLoading}:
         <Layout>
             <TechStack>
                 {TechStackButtons.map((tsBtn, index) => {
-                    return <Button variant={(selectedTs === tsBtn.label) ? "contained" : "outlined"} key={index}
-                                   onClick={() => setSelectedTs(tsBtn.label)}>{tsBtn.label}</Button>
+                    return <Button variant={(ctx.selectedTs === tsBtn.label) ? "contained" : "outlined"} key={index}
+                                   onClick={() => ctx.setSelectedTs(tsBtn.label)}>{tsBtn.label}</Button>
                 })}
             </TechStack>
             <TypeOfGeneration generateCompleteYAML={generateCompleteYAML}
                               generateYAMLFromTemplate={generateYAMLFromTemplate}/>
-            {fromScratch && <StageOptions selectedTs={selectedTs} setOutput={setOutput}
-                                          setIsGptResponseLoading={setIsGptResponseLoading}/>}
-            {fromTemplate && <TemplateInputSection selectedTs={selectedTs} setOutput={setOutput}
-                                                   setIsGptResponseLoading={setIsGptResponseLoading}/>}
+            {fromScratch && <StageOptions/>}
+            {fromTemplate && <TemplateInputSection/>}
         </Layout>
     )
 }
