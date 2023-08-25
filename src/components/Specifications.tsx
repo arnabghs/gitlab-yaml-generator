@@ -1,16 +1,10 @@
 import {Box, Button, styled, useTheme} from "@mui/material";
-import React, {useEffect, useState} from "react";
-import {COMPLETE_YAML_PROMPT} from "../prompt_templates/go/generateFullYaml";
-import {COMPLETE_YAML_PROMPT_NODE} from "../prompt_templates/node/generateFullYamlNode";
-import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFromTemplate";
-import {YAML_FROM_TEMPLATE_PROMPT_NODE} from "../prompt_templates/node/generateYamlFromTemplateNode";
-import {getStageByName} from "../helpers/util";
+import React, {useState} from "react";
+import {generateCompleteResponse, generateTemplateResponse, getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
 import {DeployOptions} from "./deploy/Deploy";
 import {StaticCheckOptions} from "./staticChecks/StaticCheck";
-import {generateResponse} from "../api/openai";
-import {generateResponseWithInContextLearn} from "../api/openaiInContextLearn";
-import {BuildParam, StageProps, Stages, TechStackButtons, UserInput, TechStackType} from "../data/data";
+import {BuildParam, StageProps, Stages, TechStackButtons, TechStackType} from "../data/data";
 import {CustomTextField, FormContainer} from "./shared/InputForm";
 
 const Layout = styled(Box)(() => ({
@@ -55,7 +49,11 @@ const TemplateInputLayout = styled(Box)(() => ({
     textAlign: "center"
 }))
 
-const TemplateInputSection = ({setUserInput}: any) => {
+const TemplateInputSection = ({
+                                  selectedTs,
+                                  setOutput,
+                                  setIsGptResponseLoading
+                              }: { selectedTs: TechStackType, setOutput: any, setIsGptResponseLoading: any }) => {
     const theme = useTheme()
     const [inputValue, setInputValue] = useState('');
 
@@ -65,7 +63,10 @@ const TemplateInputSection = ({setUserInput}: any) => {
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
-        setUserInput({templateYAML: inputValue})
+        // setUserInput({templateYAML: inputValue})
+
+        setIsGptResponseLoading(true)
+        generateTemplateResponse(selectedTs, inputValue, setOutput, setIsGptResponseLoading)
     };
     return (
         <TemplateInputLayout>
@@ -116,20 +117,21 @@ const StageContainer = styled(Box)(({theme}) => ({
 }))
 
 
-const StageOptions = ({setUserInput}: any, selectedTs: TechStackType) => {
+const StageOptions = ({
+                          selectedTs,
+                          setOutput,
+                          setIsGptResponseLoading,
+                      }: { selectedTs: TechStackType, setOutput: any, setIsGptResponseLoading: any }) => {
     const [stageState, setStageState] = useState(Stages)
     const [buildParams, setBuildParams] = useState<BuildParam>()
     const [deployParams, setDeployParams] = useState([])
     const [staticCheckParams, setStaticCheckParams] = useState([])
 
     const setEnabledStages = () => {
+        setIsGptResponseLoading(true)
+
         const enabledStages = stageState.filter(st => st.selected).map(st => st.name)
-        setUserInput({
-            stages: enabledStages,
-            buildParams: buildParams,
-            deployParams: deployParams,
-            staticCheckParams: staticCheckParams
-        })
+        generateCompleteResponse(selectedTs, enabledStages, setOutput, setIsGptResponseLoading, buildParams, deployParams, staticCheckParams)
     }
 
     const updateStageState = (stage: StageProps) => {
@@ -149,7 +151,8 @@ const StageOptions = ({setUserInput}: any, selectedTs: TechStackType) => {
                     }} key={index}>{stage.name}</Button>
                 })}
             </StageContainer>
-            {(getStageByName(stageState, "build").selected && selectedTs === "GO") ? <BuildOptions setBuildParams={setBuildParams}/> : ""}
+            {(getStageByName(stageState, "build").selected) &&
+                <BuildOptions selectedTs={selectedTs} setBuildParams={setBuildParams}/>}
             {getStageByName(stageState, "deploy").selected && <DeployOptions setDeployParams={setDeployParams}/>}
             {getStageByName(stageState, "static-checks").selected &&
                 <StaticCheckOptions setStaticCheckParams={setStaticCheckParams}/>}
@@ -169,73 +172,7 @@ const SpecificationSection = ({setOutput, setIsGptResponseLoading}:
                                   }) => {
     const [fromScratch, setFromScratch] = useState(false)
     const [fromTemplate, setFromTemplate] = useState(false)
-    const [userInput, setUserInput] = useState<UserInput>()
-    const [selectedTs, setSelectedTs] = useState<TechStackType>();
-
-    useEffect(() => {
-        let templateYAML = userInput?.templateYAML
-        let stages = userInput?.stages
-        let buildParams = userInput?.buildParams
-        let deployParams = userInput?.deployParams
-        let staticCheckParams = userInput?.staticCheckParams
-
-        if (templateYAML && stages) {
-            console.error("Both values can't be given simultaneously")
-            return
-        }
-
-        if (!templateYAML && stages?.length === 0) {
-            console.error("No input is given")
-            return
-        }
-
-        if (templateYAML && !stages) {
-            setIsGptResponseLoading(true)
-            if(selectedTs === "node" ){
-                generateResponseWithInContextLearn(YAML_FROM_TEMPLATE_PROMPT_NODE(templateYAML))
-                .then(response => {
-                    const responseText = response?.choices?.shift()?.message?.content;
-                    setOutput(responseText as string)
-                    setIsGptResponseLoading(false)
-                })
-            } else if (selectedTs === "GO") {
-                let promptInput = YAML_FROM_TEMPLATE_PROMPT(templateYAML)
-                generateResponse(promptInput)
-                .then(response => {
-                    const responseText = response?.choices?.shift()?.message?.content;
-                    setOutput(responseText as string)
-                    setIsGptResponseLoading(false)
-                })
-            } else {
-                console.log("selectedTs is neither node nor GO");
-            }
-        }
-
-        if (!templateYAML && stages) {
-            setIsGptResponseLoading(true)
-            if(selectedTs === "GO") {
-                let promptInput = COMPLETE_YAML_PROMPT(stages, buildParams, deployParams, staticCheckParams)
-                generateResponse(promptInput)
-                .then(response => {
-                    const responseText = response?.choices?.shift()?.message?.content;
-                    setOutput(responseText as string)
-                    setIsGptResponseLoading(false)
-                })
-            } else if(selectedTs === "node") {
-                let promptInput = COMPLETE_YAML_PROMPT_NODE(stages, deployParams, staticCheckParams)
-                generateResponse(promptInput)
-                .then(response => {
-                    const responseText = response?.choices?.shift()?.message?.content;
-                    setOutput(responseText as string)
-                    setIsGptResponseLoading(false)
-                })
-            } else {
-                console.log("selectedTs is neither node nor GO")
-            }
-            return
-        }
-
-    }, [userInput, setOutput,setIsGptResponseLoading, selectedTs])
+    const [selectedTs, setSelectedTs] = useState<TechStackType>("none");
 
     const generateCompleteYAML = () => {
         setFromScratch(true)
@@ -247,21 +184,20 @@ const SpecificationSection = ({setOutput, setIsGptResponseLoading}:
         setFromTemplate(true)
     }
 
-    const handleTechStackButtonClick = (tsSelected: TechStackType) => {
-        setSelectedTs(tsSelected)
-    };
-
     return (
         <Layout>
             <TechStack>
                 {TechStackButtons.map((tsBtn, index) => {
-                    return <Button variant={ (selectedTs === tsBtn.label) ? "contained" : "outlined"} key={index} onClick={() => handleTechStackButtonClick(tsBtn.label)}>{tsBtn.label}</Button>
+                    return <Button variant={(selectedTs === tsBtn.label) ? "contained" : "outlined"} key={index}
+                                   onClick={() => setSelectedTs(tsBtn.label)}>{tsBtn.label}</Button>
                 })}
             </TechStack>
             <TypeOfGeneration generateCompleteYAML={generateCompleteYAML}
                               generateYAMLFromTemplate={generateYAMLFromTemplate}/>
-            {fromScratch && <StageOptions setUserInput={setUserInput} selectedTs={selectedTs}/>}
-            {fromTemplate && <TemplateInputSection setUserInput={setUserInput}/>}
+            {fromScratch && <StageOptions selectedTs={selectedTs} setOutput={setOutput}
+                                          setIsGptResponseLoading={setIsGptResponseLoading}/>}
+            {fromTemplate && <TemplateInputSection selectedTs={selectedTs} setOutput={setOutput}
+                                                   setIsGptResponseLoading={setIsGptResponseLoading}/>}
         </Layout>
     )
 }

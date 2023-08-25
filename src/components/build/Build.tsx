@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from "react";
 import {SelectChangeEvent} from "@mui/material";
-import {SingleOptionSelector, OptionsDropdown} from "../shared/OptionsDropdown";
+import {OptionsDropdown, SingleOptionSelector} from "../shared/OptionsDropdown";
+import {TechStackType} from "../../data/data";
 
+const GoBuildOptions = ({setBuildParams}: any) => {
+    const GOOSOptions = ["darwin", "linux", "windows"]
+    const GOARCHOptions = ["amd64", "arm64"]
 
-const GOOSOptions = ["darwin", "linux", "windows"]
-const GOARCHOptions = ["amd64", "arm64"]
-
-const BuildOptions = ({setBuildParams}: any) => {
     const [GOOS, setGOOS] = useState("")
     const [GOARCH, setGOARCH] = useState("")
 
@@ -30,4 +30,13 @@ const BuildOptions = ({setBuildParams}: any) => {
     )
 }
 
-export {BuildOptions}
+const BuildOptions = ({selectedTs, setBuildParams}: { selectedTs: TechStackType | undefined, setBuildParams: any}) => {
+
+    return (
+        <>
+            {(selectedTs && selectedTs === "GO") ? <GoBuildOptions setBuildParams={setBuildParams}/> : <></>}
+        </>
+    )
+}
+
+export { BuildOptions}
