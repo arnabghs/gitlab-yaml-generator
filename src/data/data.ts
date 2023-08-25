@@ -9,14 +9,6 @@ export type StageProps = {
 
 export type BuildParam = { "GOOS": string, "GOARCH": string }
 
-export type UserInput = {
-    stages?: Stage[]
-    templateYAML?: string
-    buildParams?: BuildParam
-    deployParams?: string[]
-    staticCheckParams?: StaticCheckJobName[]
-}
-
 export type TechStackType = "GO" | "node" | "php" | "kotlin" | "none"
 
 export type TechBtnProps = {

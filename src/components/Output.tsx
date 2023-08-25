@@ -1,9 +1,10 @@
 import {Box, styled, Typography} from "@mui/material";
-import React from "react";
+import React, {useContext} from "react";
 import {CopyToClipboardButton} from "./output/CopyBtn";
 import {DownloadButton} from "./output/DownloadBtn";
 import {UploadToGitlabBtn} from "./output/UploadToGitlab";
 import CatGif from "../images/loading-fast.gif";
+import {AppContext} from "../store/AppProvider";
 
 const Layout = styled(Box)(() => ({
     height: "auto",
@@ -43,8 +44,9 @@ const formatOutput = (output: string): string => {
     return outputArr.join("\n")
 }
 
-const OutputSection = ({outputStr, isGptResponseLoading}: { outputStr: string, isGptResponseLoading: boolean }) => {
-    const output = formatOutput(outputStr)
+const OutputSection = () => {
+    const ctx = useContext(AppContext)
+    const output = formatOutput(ctx.output)
 
     return (
         <Layout>
@@ -55,7 +57,7 @@ const OutputSection = ({outputStr, isGptResponseLoading}: { outputStr: string, i
                 <UploadToGitlabBtn yamlOutput={output}/>
             </ButtonBar>
             <CodeContainer>
-                {isGptResponseLoading ?
+                {ctx.isGptResponseLoading ?
                     <LoaderContainer>
                         <Box
                             component="img"
