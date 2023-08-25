@@ -3,7 +3,7 @@ import {Box, styled} from "@mui/material";
 import {SpecificationSection} from "./components/Specifications";
 import {OutputSection} from "./components/Output";
 
-const AppContainer = styled(Box)(({theme}) => ({
+const AppContainer = styled(Box)(() => ({
     height: "100vh",
     width: "100vw",
     display: "flex"
@@ -12,11 +12,12 @@ const AppContainer = styled(Box)(({theme}) => ({
 
 function App() {
     const [output, setOutput] = useState("")
+    const [isGptResponseLoading, setIsGptResponseLoading] = useState(false);
 
     return (
         <AppContainer>
-            <SpecificationSection setOutput={setOutput}/>
-            <OutputSection output={output}/>
+            <SpecificationSection setOutput={setOutput} setIsGptResponseLoading={setIsGptResponseLoading}/>
+            <OutputSection outputStr={output} isGptResponseLoading={isGptResponseLoading}/>
         </AppContainer>
     );
 }

@@ -17,7 +17,7 @@ export type UserInput = {
     staticCheckParams?: StaticCheckJobName[]
 }
 
-export type TechStackType = "GO" | "node" | "php" | "kotlin"
+export type TechStackType = "GO" | "node" | "php" | "kotlin" | "none"
 
 export type TechBtnProps = {
     label: TechStackType
@@ -26,8 +26,8 @@ export type TechBtnProps = {
 export const TechStackButtons: TechBtnProps[] = [
     {label: "GO"},
     {label: "node"},
-    {label: "php"},
-    {label: "kotlin"}
+    // {label: "php"},
+    // {label: "kotlin"}
 ]
 
 export const Stages: StageProps[] = [
