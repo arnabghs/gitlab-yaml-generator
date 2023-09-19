@@ -151,7 +151,105 @@ const addTrainingMessages = (inputText: string): ChatCompletionRequestMessage[] 
         },
         {
             "role": "user",
-            "content": "generate a '.gitlab-ci.yml' for the given 'sample-gitlab-ci.yml' by following above steps. " + inputText
+            "content": ` a '.gitlab-ci.yml' can be generated if 'sample-gitlab-ci.yml' template file is given. These are the steps that need to be followed to generate a '.gitlab-ci.yml' from a given 'sample-gitlab-ci.yml' template file for CI CD pipeline implementation. Follow these steps: 
+            1 - Include 'sample-gitlab-ci.yml' file at top of new '.gitlab-ci.yml' file with ref 'main' and project 'my-project'.
+  2. Ignore all the global variables (variables present in top level 'variables' clause) and list only the variables used in the jobs 'variable' sections in 'sample-gitlab-ci.yml' file.
+  3. Remove any variables whose name start with 'CI_'.
+  4. Separate the variables based on whether they are used in '.cloud-deploy' hidden job of 'sample-gitlab-ci.yml' file.
+    - If the variable is used in '.cloud-deploy' hidden job, list it down under 'variable' section of each deploy job separately. Make sure to use exact same deploy job name.
+    - If the variable is not used in '.cloud-deploy' hidden job, list it down under global variables section of the new file. 
+  
+  Note: 
+    1. Do not include 'stages' section in the new '.gitlab-ci.yml' file. 
+    2. Do not add any job definition or stages for any job(including deploy jobs) in the new '.gitlab-ci.yml' file. The job should contain ONLY 'variable' section.
+    3. Always use the exact variable names. + "Now the task is: generate a '.gitlab-ci.yml' for given 'sample-gitlab-ci.yml' by following above steps. the 'sample-gitlab-ci.yml' is:\`\`\` 
+
+stages:
+  - static-checks
+  - deploy-dev
+
+  variables:
+  JFROG_ARTIFACTORY: "cicd-jfrog.telkomsel.co.id/artifactory"
+  JFROG_DOCKER_REGISTRY: "docker.cicd-jfrog.telkomsel.co.id"
+  TEST_COVERAGE_FILE: "test-coverage/coverage.cov"
+  JFROG_REPORTS_PATH: "\${PROJECT_NAME}/\${CI_PROJECT_NAME}/\${CI_PIPELINE_ID}-\${CI_COMMIT_SHORT_SHA}/reports"
+
+      lint:
+      image: \${JFROG_DOCKER_REGISTRY}/golangci/golangci-lint:v1.51-alpine
+      stage: static-checks
+      before_script:
+        - *import-curl
+      script:
+        - golangci-lint run --out-format code-climate | tee \${LINT_REPORT_FILE}.json
+      after_script:
+        - echo "uploading lint report to JFrog"
+        - CHECKSUM=$(md5sum \${LINT_REPORT_FILE}.json | awk '{ print $1 }')
+        - curl -Ssf --header "X-Checksum-MD5:\${CHECKSUM}" -u "\${ARTIFACTORY_USR}:\${ARTIFACTORY_PSW}" -T \${LINT_REPORT_FILE}.json "https://\${JFROG_ARTIFACTORY}/\${JFROG_REPORTS_PATH}/lint-report/\${LINT_REPORT_FILE}.json" -o /dev/null
+      artifacts:
+        when: always
+        reports:
+          codequality: \${LINT_REPORT_FILE}.json
+          expire_in: 1 day
+
+      .cloud-deploy:
+      image:
+        name: amazon/aws-cli:2.11.7
+        entrypoint: [""]
+      dependencies: []
+      when: manual
+      before_script:
+        - mkdir -p /root/.aws/
+        - *get-aws-profile
+        - yum install jq -y
+      script:
+        - cp /root/.aws/$NON_PROD_ECR_AWS_PROFILE /root/.aws/config
+        - aws sts get-caller-identity --profile $NON_PROD_ECR_AWS_PROFILE
+        # - aws sts get-caller-identity --profile $AWS_PROFILE
+        - echo "Updating the Task Definiton file"
+        - |
+          echo $(cat \${TASK_DEFINITION_PATH}/\${TASK_DEFINITION_TEMPLATE} | \
+          jq '.containerDefinitions[0].image="'$REPOSITORY_URL':'$IMAGE_TAG'"') | \
+          jq . >  \${TASK_DEFINITION_PATH}/\${TASK_DEFINITION_TEMPLATE}-\${ENVIRONMENT}.json
+        - cat \${TASK_DEFINITION_PATH}/\${TASK_DEFINITION_TEMPLATE}-\${ENVIRONMENT}.json
+        - |
+          aws ecs register-task-definition --cli-input-json \
+          file://\${TASK_DEFINITION_PATH}/\${TASK_DEFINITION_TEMPLATE}-\${ENVIRONMENT}.json \
+          --profile $NON_PROD_ECR_AWS_PROFILE --region "\${AWS_DEFAULT_REGION}"
+        - >       
+          SERVICE_CHECK_MISSING=$(aws ecs describe-services --region "\${AWS_DEFAULT_REGION}"  \
+                        --cluster "\${CLUSTER_NAME}" --services "\${SERVICE_NAME}" \
+                        | jq 'any(.failures[]; .reason == "MISSING")')
+    
+          if [ "\${SERVICE_CHECK_MISSING}" == "true" ]; then
+            aws ecs create-service \
+            --cluster "\${CLUSTER_NAME}" \
+            --service-name "\${SERVICE_NAME}" \
+            --cli-input-json file://\${TASK_DEFINITION_PATH}/\${SERVICE_DEFINITION_FILE} \
+            --region "\${AWS_DEFAULT_REGION}"
+          else 
+            aws ecs update-service --region "\${AWS_DEFAULT_REGION}" --cluster "\${CLUSTER_NAME}" \
+            --service "\${SERVICE_NAME}"  --task-definition "\${TASK_DEFINITION_NAME}"
+          fi
+      tags:
+       - aws_ec2_app
+    
+    
+    cloud-deploy-dev:
+      environment:
+        name: $ENVIRONMENT
+      stage: deploy-dev
+      extends: .cloud-deploy
+
+              \`\`\`  `
+        },
+        {
+            "role": "assistant",
+            "content": `
+            `
+        },
+        {
+            "role": "user",
+            "content": "generate a '.gitlab-ci.yml' for the given 'sample-gitlab-ci.yml' by following above steps. "  + inputText 
         }
     ]
 }
