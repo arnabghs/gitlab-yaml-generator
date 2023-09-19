@@ -7,7 +7,7 @@ import CatGif from "../images/loading-fast.gif";
 import {AppContext} from "../store/AppProvider";
 
 const Layout = styled(Box)(() => ({
-    height: "auto",
+    height: "100%",
     width: "50%",
     display: "flex",
     flexDirection: "column",
@@ -22,7 +22,7 @@ const CodeContainer = styled(Box)(({theme}) => ({
     padding: theme.spacing(4)
 }))
 
-const LoaderContainer = styled(Box)(({theme}) => ({
+const LoaderContainer = styled(Box)(() => ({
     display: "flex",
     justifyContent: "center",
     alignItems: "center"
@@ -34,6 +34,12 @@ const ButtonBar = styled(Box)(({theme}) => ({
     alignItems: "center",
     gap: theme.spacing(4),
     height: "5%"
+}))
+
+const HeaderTextContainer = styled(Box)(() => ({
+    height: "5%",
+    textAlign: "center",
+    caretColor: "transparent"
 }))
 
 const formatOutput = (output: string): string => {
@@ -50,7 +56,7 @@ const OutputSection = () => {
 
     return (
         <Layout>
-            <Box height="5%" textAlign="center"><Typography variant="h4">Generated YAML:</Typography></Box>
+            <HeaderTextContainer><Typography variant="h4">Generated YAML:</Typography></HeaderTextContainer>
             <ButtonBar>
                 <CopyToClipboardButton yamlOutput={output}/>
                 <DownloadButton yamlOutput={output}/>
@@ -75,4 +81,4 @@ const OutputSection = () => {
     )
 }
 
-export {OutputSection}
+export { OutputSection}

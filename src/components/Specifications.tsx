@@ -36,10 +36,12 @@ const GenerationLayout = styled(Box)(() => ({
 
 const TypeOfGeneration = ({generateCompleteYAML, generateYAMLFromTemplate}:
                               { generateCompleteYAML: () => void, generateYAMLFromTemplate: () => void }) => {
+
+    const ctx = useContext(AppContext)
     return (
         <GenerationLayout>
-            <Button variant="outlined" onClick={generateCompleteYAML}> Generate from Scratch</Button>
-            <Button variant="outlined" onClick={generateYAMLFromTemplate}> Generate from template</Button>
+            <Button variant="outlined" disabled={ctx.selectedTs === "none"} onClick={generateCompleteYAML}> Generate from Scratch</Button>
+            <Button variant="outlined" disabled={ctx.selectedTs === "none"} onClick={generateYAMLFromTemplate}> Generate from template</Button>
         </GenerationLayout>
     )
 }

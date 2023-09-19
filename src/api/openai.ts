@@ -1,4 +1,5 @@
 import {Configuration, OpenAIApi} from "openai";
+import {addTrainingMessages} from "./inContextTraining";
 
 // Controller function to handle chat conversation
 export const generateResponse = async (inputText: string) => {
@@ -12,20 +13,11 @@ export const generateResponse = async (inputText: string) => {
         const result = await openai.createChatCompletion({
             model: modelId,
             temperature: 0,
-            messages: [
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant."
-                },
-                {
-                    "role": "user",
-                    "content": inputText
-                }
-            ],
+            messages: addTrainingMessages(inputText),
         });
 
         return result?.data
     } catch (err) {
-        console.error(err);
+        console.error("There is some error :", err);
     }
 };
