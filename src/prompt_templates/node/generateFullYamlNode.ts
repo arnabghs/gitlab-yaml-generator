@@ -51,7 +51,7 @@ const PackagePrompt = `
 
 const PublishPrompt = `
     'publish' stage will contain following job names:
-     - 'publish-image': this job loads the docker image from '$DOCKER_IMAGE_TARFILE' input using 'latest' tag of 'docker' image. This job also exposes Docker within Docker (DinD) as a service with 'name' value 'docker:24.0.5-dind' and 'alias' value 'dockerdeamon'. This job uses variable 'DOCKER_TLS_CERTDIR' with value "". This job also uses 'DOCKER_HOST' variable with value 'tcp://dockerdeamon:2375' to specify docker host. Then the image will be tagged as '$FINAL_IMAGETAG' and pushed to dockerhub.
+     - 'publish-image': this job loads the docker image from '$DOCKER_IMAGE_TARFILE' input using 'latest' tag of 'docker' image. This job also exposes Docker within Docker (DinD) as a service with 'name' value 'docker:24.0.5-dind' and 'alias' value 'dockerdeamon'. This job uses variable 'DOCKER_TLS_CERTDIR' with value "". This job also uses 'DOCKER_HOST' variable with value 'tcp://dockerdeamon:2375' to specify docker host. Then the image will be tagged as '$FINAL_IMAGETAG' and pushed to dockerhub. Authenticate with Docker registry with username stored in gitlab environment variable '$DOCKER_USERNAME' and password stored in gitlab environment variable '$DOCKER_PASSWORD'  before pushing the image.
 `
 
 const CloudDeployPrompt = `
