@@ -15,6 +15,7 @@ const VariablesPrompt = `
      - 'FINAL_IMAGETAG' to determine the final tag of the image before it is pushed. Use value 'anushapalle/$CI_PROJECT_TITLE-\${CI_COMMIT_SHORT_SHA}'
      - 'DAST_ENDPOINT' to be used in 'zap-baseline-dast' job. Use value "https://apidev.my-app.com"
      - 'DOCKERFILE_PATH' to be used to specify file Dockerfile path. Use value 'Dockerfile'  
+     - 'DOCKER_IMAGE_TARFILE': to be used to specify tar file. Use value "\${CI_PROJECT_TITLE}-tar.tar"
 `
 
 const staticCheckPrompt = (jobs?: StaticCheckJobName[]): string => {
