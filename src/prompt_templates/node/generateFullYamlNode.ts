@@ -15,7 +15,6 @@ const VariablesPrompt = `
      - 'FINAL_IMAGETAG' to determine the final tag of the image before it is pushed. Use value 'anushapalle/$CI_PROJECT_TITLE-\${CI_COMMIT_SHORT_SHA}'
      - 'DAST_ENDPOINT' to be used in 'zap-baseline-dast' job. Use value "https://apidev.my-app.com"
      - 'DOCKERFILE_PATH' to be used to specify file Dockerfile path. Use value 'Dockerfile'  
-     - 'DOCKER_HOST' to be used to specify docker host. use value 'tcp://dockerdeamon:2375'
 `
 
 const staticCheckPrompt = (jobs?: StaticCheckJobName[]): string => {
@@ -46,12 +45,12 @@ const TestPrompt = `
 
 const PackagePrompt = `
     'package' stage will contain following job names:
-      - 'docker-build': this job will build a docker image from docker file mentioned in '$DOCKERFILE_PATH' variable  with tag '$CI_PROJECT_TITLE-\${CI_COMMIT_SHORT_SHA}' and build context as current directory. This job uses the 'latest' tag of the 'docker' "image" at the job level. This job also exposes Docker within Docker (DinD) as a service using the 'docker:18.09.7-dind' image. Then it will create a tar of the generated image under the output path '$DOCKER_IMAGE_TARFILE' and pass it along in artefacts path.
+      - 'docker-build': this job will build a docker image from docker file mentioned in '$DOCKERFILE_PATH' variable  with tag '$CI_PROJECT_TITLE-\${CI_COMMIT_SHORT_SHA}' and build context as current directory. This job uses the 'latest' tag of the 'docker' "image" at the job level. This job also exposes Docker within Docker (DinD) as a service with 'name' value 'docker:24.0.5-dind' and 'alias' value 'dockerdeamon'. This job uses variable 'DOCKER_TLS_CERTDIR' with value "". This job also uses 'DOCKER_HOST' variable with value 'tcp://dockerdeamon:2375' to specify docker host. Then it will create a tar of the generated image under the output path '$DOCKER_IMAGE_TARFILE' and pass it along in artefacts path.
 `
 
 const PublishPrompt = `
     'publish' stage will contain following job names:
-     - 'publish-image': this job loads the docker image from '$DOCKER_IMAGE_TARFILE' input using 'latest' tag of 'docker' image.Then the image will be tagged as '$FINAL_IMAGETAG' and pushed to dockerhub.
+     - 'publish-image': this job loads the docker image from '$DOCKER_IMAGE_TARFILE' input using 'latest' tag of 'docker' image. This job also exposes Docker within Docker (DinD) as a service with 'name' value 'docker:24.0.5-dind' and 'alias' value 'dockerdeamon'. This job uses variable 'DOCKER_TLS_CERTDIR' with value "". This job also uses 'DOCKER_HOST' variable with value 'tcp://dockerdeamon:2375' to specify docker host. Then the image will be tagged as '$FINAL_IMAGETAG' and pushed to dockerhub.
 `
 
 const CloudDeployPrompt = `
