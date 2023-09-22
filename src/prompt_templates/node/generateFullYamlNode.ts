@@ -73,6 +73,11 @@ const DastScanPrompt = `
       - 'zap-baseline-dast': this job will run zap baseline scan on '$DAST_ENDPOINT' variable url and pass the generated report in artefacts path.
 `
 
+const MinikubeDeployPrompt = `
+    'deploy' stage will contain following job names:
+      - 'deploy-minikube': This job uses 'bitnami/kubectl:latest' image with 'entrypoint' as ['']. This job displays a list of all the available contexts in the Kubernetes configuration file and also lists all the pods running in the current context and namespace.
+`
+
 const IncludeStagesPrompt = (stages: Stage[]): string => {
     let promptString = "Include"
     stages.forEach((stage, index) => {
@@ -95,7 +100,8 @@ const stagesToInclude = (stages: Stage[], deployParams?: string[], staticCheckPa
         "publish": PublishPrompt,
         "CloudDeploy": CloudDeployPrompt,
         "deploy": deployPrompt(deployParams),
-        "DAST-scan": DastScanPrompt
+        "DAST-scan": DastScanPrompt,
+        "deploy-minikube": MinikubeDeployPrompt,
     }
 
     const promptKeys: string[] = [...stages]
