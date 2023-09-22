@@ -14,6 +14,11 @@ const VariablesPrompt = (stages: string[]): string => {
         prompt = prompt + ` - 'GOLINT_IMAGE' to determine the docker image for running 'golangci-lint'. Use the latest image available
         `
     }
+    if (stages.includes("package")) {
+        prompt = prompt + ` - 'DOCKERFILE_PATH' to be used to specify file Dockerfile path. Use value 'Dockerfile'  
+                            - 'DOCKER_IMAGE_TARFILE': to be used to specify tar file. Use value "\${CI_PROJECT_TITLE}-tar.tar"
+        `
+    }
     if (stages.includes("publish")) {
         prompt = prompt + ` - 'FINAL_IMAGETAG' to determine the final tag of the image before it is pushed. Use value 'arnabghs/$APP_NAME-\${CI_COMMIT_SHORT_SHA}'
         `
@@ -56,12 +61,12 @@ const TestPrompt = `
 
 const PackagePrompt = `
     'package' stage will contain following job names:
-      - 'docker-build': this job will build a docker image from '$DOCKERFILE_PATH' variable with tag '$APP_NAME-\${CI_COMMIT_SHORT_SHA}' using 'latest' tag of 'docker' image. Then it will create a tar of the generated image under the output path '$DOCKER_IMAGE_TARFILE' and pass it along in artefacts path.
+      - 'docker-build': this job will build a docker image from docker file mentioned in '$DOCKERFILE_PATH' variable  with tag '$CI_PROJECT_TITLE-\${CI_COMMIT_SHORT_SHA}' and build context as current directory. This job uses the 'latest' tag of the 'docker' "image" at the job level. This job also exposes Docker within Docker (DinD) as a service with 'name' value 'docker:24.0.5-dind' and 'alias' value 'dockerdeamon'. This job uses variable 'DOCKER_TLS_CERTDIR' with value "". This job also uses 'DOCKER_HOST' variable with value 'tcp://dockerdeamon:2375' to specify docker host. Then it will create a tar of the generated image under the output path '$DOCKER_IMAGE_TARFILE' and pass it along in artefacts path.
 `
 
 const PublishPrompt = `
     'publish' stage will contain following job names:
-     - 'publish-image': this job loads the docker image from '$DOCKER_IMAGE_TARFILE' input using 'latest' tag of 'docker' image.Then the image will be tagged as '$FINAL_IMAGETAG' and pushed to dockerhub.
+     - 'publish-image': this job loads the docker image from '$DOCKER_IMAGE_TARFILE' input using 'latest' tag of 'docker' image. This job also exposes Docker within Docker (DinD) as a service with 'name' value 'docker:24.0.5-dind' and 'alias' value 'dockerdeamon'. This job uses variable 'DOCKER_TLS_CERTDIR' with value "". This job also uses 'DOCKER_HOST' variable with value 'tcp://dockerdeamon:2375' to specify docker host. Then the image will be tagged as '$FINAL_IMAGETAG' and pushed to dockerhub. Authenticate with Docker registry with username stored in gitlab environment variable '$DOCKER_USERNAME' and password stored in gitlab environment variable '$DOCKER_PASSWORD'  before pushing the image.
 `
 
 const CloudDeployPrompt = `
