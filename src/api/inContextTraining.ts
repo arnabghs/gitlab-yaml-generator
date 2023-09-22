@@ -245,6 +245,30 @@ stages:
         {
             "role": "assistant",
             "content": `
+include:
+  - project: my-project
+    ref: main
+    file: "sample-gitlab-ci.yml"
+
+variables:
+ LINT_REPORT_FILE: \${LINT_REPORT_FILE}
+ ARTIFACTORY_USR: \${ARTIFACTORY_USR}
+ ARTIFACTORY_PSW: \${ARTIFACTORY_PSW}
+
+cloud-deploy-dev:
+  variables:
+    ENVIRONMENT: dev
+    NON_PROD_ECR_AWS_PROFILE: \${NON_PROD_ECR_AWS_PROFILE}
+    AWS_PROFILE: \${AWS_PROFILE}
+    TASK_DEFINITION_PATH: \${TASK_DEFINITION_PATH}
+    TASK_DEFINITION_TEMPLATE: \${TASK_DEFINITION_TEMPLATE}
+    REPOSITORY_URL: \${REPOSITORY_URL}
+    IMAGE_TAG: \${IMAGE_TAG}
+    AWS_DEFAULT_REGION: \${AWS_DEFAULT_REGION}
+    CLUSTER_NAME: \${CLUSTER_NAME}
+    SERVICE_NAME: \${SERVICE_NAME}
+    SERVICE_DEFINITION_FILE: \${SERVICE_DEFINITION_FILE}
+    TASK_DEFINITION_NAME: \${TASK_DEFINITION_NAME}
             `
         },
         {
