@@ -1,5 +1,6 @@
 import {BuildParam, Stage, StageProps, StaticCheckJobName, TechStackType} from "../data/data";
 import {generateResponseWithInContextLearn} from "../api/openaiInContextLearn";
+import {generateResponseWithInContextLearnGO} from "../api/inContextTraining";
 import {YAML_FROM_TEMPLATE_PROMPT_NODE} from "../prompt_templates/node/generateYamlFromTemplateNode";
 import {YAML_FROM_TEMPLATE_PROMPT} from "../prompt_templates/go/generateYamlFromTemplate";
 import {generateResponse} from "../api/openai";
@@ -24,7 +25,7 @@ const generateTemplateResponse = (selectedTs: TechStackType,
             })
     } else if (selectedTs === "GO") {
         let promptInput = YAML_FROM_TEMPLATE_PROMPT(templateYAML)
-        generateResponse(promptInput)
+        generateResponseWithInContextLearnGO(promptInput)
             .then(response => {
                 const responseText = response?.choices?.shift()?.message?.content;
                 setOutput(responseText as string)
