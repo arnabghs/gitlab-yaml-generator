@@ -1,4 +1,5 @@
 import {Configuration, OpenAIApi} from "openai";
+import {addTrainingMessages} from "./inContextTraining";
 
 // Controller function to handle chat conversation
 export const generateResponse = async (inputText: string) => {
@@ -12,6 +13,7 @@ export const generateResponse = async (inputText: string) => {
         const result = await openai.createChatCompletion({
             model: modelId,
             temperature: 0,
+            // messages: addTrainingMessages(inputText),
             messages: [
                 {
                     "role": "system",
@@ -19,13 +21,13 @@ export const generateResponse = async (inputText: string) => {
                 },
                 {
                     "role": "user",
-                    "content": inputText
+                    "content": "generate a '.gitlab-ci.yml' for the given 'sample-gitlab-ci.yml' by following above steps. "  + inputText
                 }
             ],
         });
 
         return result?.data
     } catch (err) {
-        console.error(err);
+        console.error("There is some error :", err);
     }
 };

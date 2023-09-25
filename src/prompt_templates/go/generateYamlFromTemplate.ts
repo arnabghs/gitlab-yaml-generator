@@ -8,12 +8,16 @@ ${templateYAML}
 
 Write a .gitlab-ci.yml file for a golang application by performing the following actions:
 
-  1 - Include 'sample-gitlab-ci.yml' file at top of new '.gitlab-ci.yml' file with ref 'main' and project 'my-project'
-  2 - Find out all the variables used in 'sample-gitlab-ci.yml' file, remove the ones used in '.cloud-deploy' job and list the rest of them down under global variables section
-  3 - create seperate variable sections for each deploy jobs with exact job name as mentioned in 'sample-gitlab-ci.yml' template file
-  4 - Find out all the variables used in '.cloud-deploy' job and list them down in respective deploy jobs variable section
+  1 - Include 'sample-gitlab-ci.yml' file at top of new '.gitlab-ci.yml' file with ref 'main' and project 'my-project'.
+  2 - IGNORE all the global variables (variables present in top level 'variables' clause) and any variables whose name start with 'CI_', List only the variables used in the jobs 'variable' sections in 'sample-gitlab-ci.yml' file. List them at appropriate places based on the following instructions: 
+    - If the variable is used in '.cloud-deploy' hidden job, list it down under 'variable' section of each deploy job separately. Make sure to use exact same deploy job name.
+    - If the variable is not used in '.cloud-deploy' hidden job, list it down under top level global variables section of the new gitlab CI file. Strictly do not duplicate any '.cloud-deploy' job variables in global variables section.
+    - Do not create any job variable section except 'deploy' jobs. 
   
-  Note: Do not add any job definition(including deploy jobs) and 'stages' section in the new 'sample-gitlab-ci.yml' file. Always use the exact variable name.
+  Note: 
+    1. Do not include 'stages' section in the new '.gitlab-ci.yml' file. 
+    2. Do not add any job definition or stages for any job(including deploy jobs) in the new '.gitlab-ci.yml' file. The job should contain ONLY 'variable' section.
+    3. Always use the exact variable names.
   \`\`\`
 `
 

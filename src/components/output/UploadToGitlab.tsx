@@ -1,13 +1,13 @@
 import * as React from 'react';
 import {useState} from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import {SingleOptionSelector} from "../shared/OptionsDropdown";
 import {CircularProgress, SelectChangeEvent, styled, Typography} from "@mui/material";
 import {CustomTextField} from "../shared/InputForm";
 import {uploadToGitlab, validateGeneratedYAML} from "../../api/gitlab";
 import CatGif from "../../images/loading-fast.gif";
+import {PrimaryBtn} from "../shared/button";
 
 const StyledForm = styled(Box)(({theme}) => ({
     position: 'absolute' as 'absolute',
@@ -16,16 +16,15 @@ const StyledForm = styled(Box)(({theme}) => ({
     transform: 'translate(-50%, -50%)',
     width: "25%",
     height: "50%",
-    backgroundColor: "white",
+    backgroundColor: theme.palette.secondary.light,
     border: '1px solid #000',
 
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-around",
-    padding: theme.spacing(4)
-
+    padding: theme.spacing(4),
+    borderRadius: theme.spacing(4)
 }))
-
 
 const UploadOptions = ["create", "update"]
 
@@ -58,9 +57,11 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
         validateGeneratedYAML(yamlOutput, repoID, accessToken, setIsValidationInProgress, setIsValidYaml, setValidationMsg)
     }
 
+    const isDisabled = yamlOutput === ""
+
     return (
         <div>
-            <Button variant="outlined" onClick={handleOpen}>Upload to Gitlab</Button>
+            <PrimaryBtn variant='contained' disabled={isDisabled} onClick={handleOpen}>Upload to Gitlab</PrimaryBtn>
             <Modal open={open} onClose={handleClose}>
                 <StyledForm>
                     {isPushingInProgress ? <Box
@@ -83,9 +84,7 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
                                 value={accessToken}
                                 onChange={(event) => setAccessToken(event.target.value)}
                             />
-                            <Button variant="contained" onClick={validateYAML} sx={{backgroundColor: "#0d9465"}}>
-                                Validate YAML
-                            </Button>
+                            <PrimaryBtn variant="contained" onClick={validateYAML}>Validate YAML</PrimaryBtn>
                             {isValidationInProgress && <Box textAlign={"center"}><CircularProgress/></Box>}
                             {validationMsg && <Typography>{validationMsg}</Typography>}
                             <CustomTextField
@@ -96,11 +95,10 @@ const UploadToGitlabBtn = ({yamlOutput}: { yamlOutput: string }) => {
                             <Typography variant={"caption"}>Make sure the branch already exists</Typography>
                             <SingleOptionSelector selectedItem={uploadOption} onChange={selectUploadOption}
                                                   items={UploadOptions} label={"action"}/>
-                            <Button variant="contained" disabled={!isValidYaml} onClick={pushToGitlab}>Push</Button>
+                            <PrimaryBtn variant="contained" disabled={!isValidYaml} onClick={pushToGitlab}>Push</PrimaryBtn>
                         </>
                     }
                 </StyledForm>
-
             </Modal>
         </div>
     );
