@@ -13,59 +13,63 @@ const Layout = styled(Box)(() => ({
     flexDirection: "column",
 }))
 
-const CodeContainer = styled(Box)(({theme}) => ({
-    height: "90%",
-    width: "95%",
-    border: "1px solid black",
-    backgroundColor: "#f1f7d5",
-    overflow: "auto",
-    padding: theme.spacing(4)
-}))
+interface RootProps {
+    isLoading?: boolean
+}
 
-const LoaderContainer = styled(Box)(() => ({
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
-}))
+const CodeContainer = styled(Box, {
+        shouldForwardProp: (prop) => prop !== 'isLoading',
+        name: 'MyThemeComponent',
+        slot: 'Root'
+    }) <RootProps> (({isLoading, theme}) => ({
+        height: "86%",
+        width: "95%",
+        borderRadius: theme.spacing(8),
+        background: "-webkit-linear-gradient(left, rgba(251,248,208,1) 0%, rgba(255,226,179,1) 100%)",
+        overflow: "scroll",
+        '&::-webkit-scrollbar': {
+            display: 'none',
+        },
+        padding: theme.spacing(4),
+        boxShadow: "0px 0px 20px 5px rgba(0,0,0,0.5)",
+        display: "flex",
+        justifyContent: isLoading ? "center" : "start",
+        alignItems: isLoading ? "center" : "start"
+    }))
 
 const ButtonBar = styled(Box)(({theme}) => ({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     gap: theme.spacing(4),
-    height: "5%"
+    height: "8%"
 }))
 
-const HeaderTextContainer = styled(Box)(() => ({
-    height: "5%",
+const HeaderTextContainer = styled(Box)(({theme}) => ({
+    height: "6%",
     textAlign: "center",
-    caretColor: "transparent"
+    caretColor: "transparent",
+    color: theme.palette.text.primary
 }))
 
-// const formatOutput = (output: string): string => {
-//     let outputArr = output.split("\n")
-//     outputArr.pop()
-//     outputArr.shift()
-//
-//     return outputArr.join("\n")
-// }
+const formatOutput = (output: string): string => {
+    let outputArr = output.split("\n")
+    outputArr.pop()
+    outputArr.shift()
+
+    return outputArr.join("\n")
+}
 
 const OutputSection = () => {
     const ctx = useContext(AppContext)
-    // const output = formatOutput(ctx.output)
-    const output = ctx.output
+    const output = ctx.output.includes("```yaml") ? formatOutput(ctx.output) : ctx.output
 
     return (
         <Layout>
-            <HeaderTextContainer><Typography variant="h4">Generated YAML:</Typography></HeaderTextContainer>
-            <ButtonBar>
-                <CopyToClipboardButton yamlOutput={output}/>
-                <DownloadButton yamlOutput={output}/>
-                <UploadToGitlabBtn yamlOutput={output}/>
-            </ButtonBar>
-            <CodeContainer>
+            <HeaderTextContainer><Typography variant="h4">Generated YAML</Typography></HeaderTextContainer>
+            <CodeContainer isLoading={ctx.isGptResponseLoading}>
                 {ctx.isGptResponseLoading ?
-                    <LoaderContainer>
+                    <Box>
                         <Box
                             component="img"
                             sx={{
@@ -75,11 +79,16 @@ const OutputSection = () => {
                             alt="spinner GIF"
                             src={CatGif}
                         />
-                    </LoaderContainer> :
+                    </Box> :
                     <pre>{output}</pre>}
             </CodeContainer>
+            <ButtonBar>
+                <CopyToClipboardButton yamlOutput={output}/>
+                <DownloadButton yamlOutput={output}/>
+                <UploadToGitlabBtn yamlOutput={output}/>
+            </ButtonBar>
         </Layout>
     )
 }
 
-export { OutputSection}
+export {OutputSection}

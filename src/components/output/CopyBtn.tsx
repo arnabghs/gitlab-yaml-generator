@@ -1,5 +1,6 @@
 import React, {useState} from "react";
-import {Button, Snackbar} from "@mui/material";
+import { Snackbar} from "@mui/material";
+import {PrimaryBtn} from "../shared/button";
 
 const CopyToClipboardButton = ({yamlOutput}: { yamlOutput: string }) => {
     const [open, setOpen] = useState(false)
@@ -8,9 +9,11 @@ const CopyToClipboardButton = ({yamlOutput}: { yamlOutput: string }) => {
         navigator.clipboard.writeText(yamlOutput)
     }
 
+    const isDisabled = yamlOutput === ""
+
     return (
         <>
-            <Button variant="outlined" onClick={handleClick}>COPY</Button>
+            <PrimaryBtn variant='contained' disabled={isDisabled} onClick={handleClick}>COPY</PrimaryBtn>
             <Snackbar
                 open={open}
                 onClose={() => setOpen(false)}

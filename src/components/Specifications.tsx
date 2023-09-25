@@ -1,4 +1,4 @@
-import {Box, Button, styled, useTheme} from "@mui/material";
+import {Box, Button, styled} from "@mui/material";
 import React, {useContext, useState} from "react";
 import {generateCompleteResponse, generateTemplateResponse, getStageByName} from "../helpers/util";
 import {BuildOptions} from "./build/Build";
@@ -7,6 +7,7 @@ import {StaticCheckOptions} from "./staticChecks/StaticCheck";
 import {BuildParam, StageProps, Stages, StaticCheckJobName, TechStackButtons} from "../data/data";
 import {CustomTextField, FormContainer} from "./shared/InputForm";
 import {AppContext} from "../store/AppProvider";
+import {PrimaryBtn} from "./shared/button";
 
 const Layout = styled(Box)(() => ({
     height: "100%",
@@ -53,7 +54,6 @@ const TemplateInputLayout = styled(Box)(() => ({
 }))
 
 const TemplateInputSection = () => {
-    const theme = useTheme()
     const [inputValue, setInputValue] = useState('');
     const ctx = useContext(AppContext)
 
@@ -81,13 +81,14 @@ const TemplateInputSection = () => {
                         '&::-webkit-scrollbar': {
                             display: 'none', 
                         },
+                        background: "-webkit-linear-gradient(left, rgba(229,228,246,1) 0%, rgba(239,236,248,1) 50%, rgba(255,255,255,1) 100%)",
                     }}
                     value={inputValue}
                     onChange={handleInputChange}
                 />
-                <Button type="submit" variant="contained" sx={{marginTop: theme.spacing(2), backgroundColor: "green"}}>
+                <PrimaryBtn type="submit" variant="contained">
                     Submit YAML
-                </Button>
+                </PrimaryBtn>
             </FormContainer>
         </TemplateInputLayout>
     )
@@ -156,7 +157,7 @@ const StageOptions = () => {
             {getStageByName(stageState, "static-checks").selected &&
                 <StaticCheckOptions staticCheckParams={staticCheckParams} setStaticCheckParams={setStaticCheckParams}/>}
             <SubmitBtnContainer>
-                <Button variant="contained" onClick={setEnabledStages} sx={{backgroundColor: "green"}}> Submit</Button>
+                <PrimaryBtn variant="contained" onClick={setEnabledStages}> Submit</PrimaryBtn>
             </SubmitBtnContainer>
         </StageOptionsLayout>
     )

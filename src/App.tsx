@@ -11,11 +11,19 @@ const AppContainer = styled(Box)(() => ({
     flexDirection: "column"
 }))
 
-const Header = styled(Box)(() => ({
-    height: "10%",
+const Header = styled(Box)(({theme}) => ({
+    height: "8%",
     display: "flex",
     justifyContent: "center",
-    caretColor: "transparent"
+    caretColor: "transparent",
+    backgroundColor: theme.palette.primary.dark,
+    color: theme.palette.text.primary
+}))
+
+const AppBody = styled(Box)(({theme}) => ({
+    height: "92%",
+    display: "flex",
+    backgroundColor: theme.palette.primary.light
 }))
 
 function App() {
@@ -25,10 +33,10 @@ function App() {
                 <Header>
                     <Typography variant={"h2"}>YAML Generator</Typography>
                 </Header>
-                <Box height="90%" display={"flex"}>
+                <AppBody>
                     <SpecificationSection/>
                     <OutputSection/>
-                </Box>
+                </AppBody>
             </AppProvider>
         </AppContainer>
     );
