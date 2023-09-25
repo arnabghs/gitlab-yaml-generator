@@ -42,17 +42,18 @@ const HeaderTextContainer = styled(Box)(() => ({
     caretColor: "transparent"
 }))
 
-const formatOutput = (output: string): string => {
-    let outputArr = output.split("\n")
-    outputArr.pop()
-    outputArr.shift()
-
-    return outputArr.join("\n")
-}
+// const formatOutput = (output: string): string => {
+//     let outputArr = output.split("\n")
+//     outputArr.pop()
+//     outputArr.shift()
+//
+//     return outputArr.join("\n")
+// }
 
 const OutputSection = () => {
     const ctx = useContext(AppContext)
-    const output = formatOutput(ctx.output)
+    // const output = formatOutput(ctx.output)
+    const output = ctx.output
 
     return (
         <Layout>

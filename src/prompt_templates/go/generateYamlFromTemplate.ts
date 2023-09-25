@@ -9,11 +9,10 @@ ${templateYAML}
 Write a .gitlab-ci.yml file for a golang application by performing the following actions:
 
   1 - Include 'sample-gitlab-ci.yml' file at top of new '.gitlab-ci.yml' file with ref 'main' and project 'my-project'.
-  2. Ignore all the global variables (variables present in top level 'variables' clause) and list only the variables used in the jobs 'variable' sections in 'sample-gitlab-ci.yml' file.
-  3. Remove any variables whose name start with 'CI_'.
-  4. Separate the variables based on whether they are used in '.cloud-deploy' hidden job of 'sample-gitlab-ci.yml' file.
+  2 - IGNORE all the global variables (variables present in top level 'variables' clause) and any variables whose name start with 'CI_', List only the variables used in the jobs 'variable' sections in 'sample-gitlab-ci.yml' file. List them at appropriate places based on the following instructions: 
     - If the variable is used in '.cloud-deploy' hidden job, list it down under 'variable' section of each deploy job separately. Make sure to use exact same deploy job name.
-    - If the variable is not used in '.cloud-deploy' hidden job, list it down under global variables section of the new file. 
+    - If the variable is not used in '.cloud-deploy' hidden job, list it down under top level global variables section of the new gitlab CI file. Strictly do not duplicate any '.cloud-deploy' job variables in global variables section.
+    - Do not create any job variable section except 'deploy' jobs. 
   
   Note: 
     1. Do not include 'stages' section in the new '.gitlab-ci.yml' file. 

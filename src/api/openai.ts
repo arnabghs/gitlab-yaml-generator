@@ -13,7 +13,17 @@ export const generateResponse = async (inputText: string) => {
         const result = await openai.createChatCompletion({
             model: modelId,
             temperature: 0,
-            messages: addTrainingMessages(inputText),
+            // messages: addTrainingMessages(inputText),
+            messages: [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "generate a '.gitlab-ci.yml' for the given 'sample-gitlab-ci.yml' by following above steps. "  + inputText
+                }
+            ],
         });
 
         return result?.data

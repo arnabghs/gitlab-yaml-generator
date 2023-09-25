@@ -73,10 +73,14 @@ const TemplateInputSection = () => {
                 <CustomTextField
                     placeholder="Enter gitlab template here"
                     multiline
-                    rows={24}
+                    rows={20}
                     sx={{
                         height: "100%",
                         width: "90%",
+                        overflow: "scroll",
+                        '&::-webkit-scrollbar': {
+                            display: 'none', 
+                        },
                     }}
                     value={inputValue}
                     onChange={handleInputChange}
