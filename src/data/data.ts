@@ -1,4 +1,4 @@
-export type Stage = "static-checks" | "build" | "test" | "package" | "publish" | "deploy" | "DAST-scan" | "deploy-minikube"
+export type Stage = "static-checks" | "build" | "test" | "package" | "publish" | "deploy" | "DAST-scan"
 
 export type StaticCheckJobName = "lint" | "gemnasium-dependency_scanning"
 
@@ -29,6 +29,5 @@ export const Stages: StageProps[] = [
     {name: "package", selected: false},
     {name: "publish", selected: false},
     {name: "deploy", selected: false},
-    {name: "DAST-scan", selected: false},
-    {name: "deploy-minikube", selected: false}
+    {name: "DAST-scan", selected: false}
 ]
