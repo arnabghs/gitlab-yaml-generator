@@ -31,15 +31,6 @@ const addTrainingMessages = (inputText: string): ChatCompletionRequestMessage[] 
             "content": "Top-level elements with an arbitrary name and must contain at least the `script` clause or `extend` clause"
         },
         {
-            "role": "user",
-            "content": "Identify the job name in this gitlab ci code snippet:" +
-                `"
-                test:
-                    stage: build
-                    script: echo hello
-                 "`
-        },
-        {
             "role": "assistant",
             "content": "`test` is the job name in the given code snippet because it has `script` clause."
         },
@@ -85,7 +76,7 @@ const addTrainingMessages = (inputText: string): ChatCompletionRequestMessage[] 
         },
         {
             "role": "user",
-            "content": "generate a '.gitlab-ci.yml' for the given 'sample-gitlab-ci.yml' by following above steps. "  + inputText 
+            "content": "Generate a '.gitlab-ci.yml' from the given 'sample-gitlab-ci.yml' template by following the given steps. Reply with the generated '.gitlab-ci.yml' file only, do not write any explanations."  + inputText
         }
     ]
 }

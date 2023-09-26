@@ -53,16 +53,15 @@ const HeaderTextContainer = styled(Box)(({theme}) => ({
 }))
 
 const formatOutput = (output: string): string => {
-    let outputArr = output.split("\n")
-    outputArr.pop()
-    outputArr.shift()
+    const lines = output.split("\n")
+    const codeLines = lines.filter((line : string) => !line.includes("```"))
 
-    return outputArr.join("\n")
+    return codeLines.join("\n")
 }
 
 const OutputSection = () => {
     const ctx = useContext(AppContext)
-    const output = ctx.output.includes("```yaml") ? formatOutput(ctx.output) : ctx.output
+    const output = formatOutput(ctx.output)
 
     return (
         <Layout>
