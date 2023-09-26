@@ -31,7 +31,7 @@ function App() {
         <AppContainer>
             <AppProvider>
                 <Header>
-                    <Typography variant={"h2"}>YAML Generator</Typography>
+                    <Typography variant={"h2"}>Gitlab CI YAML Generator</Typography>
                 </Header>
                 <AppBody>
                     <SpecificationSection/>
